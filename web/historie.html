@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Historie · pražské mimoúrovňové křižovatky</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root { --blue: #1E3D7C; --blue-light: #6E89B8; --blue-tint: rgba(30,61,124,0.08); }
+    body[data-page="historie"] main { padding: 0; max-width: none; }
+    body[data-page="historie"] .nav { border-radius: 0; }
+    .page-historie * { border-radius: 0 !important; }
+    .page-historie { color: var(--blue); }
+
+    .h-hero {
+      background: var(--blue); color: white;
+      padding: clamp(80px, 12vh, 130px) clamp(24px, 6vw, 80px) clamp(28px, 4vh, 48px);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .h-hero-top { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; margin-bottom: clamp(24px, 5vh, 56px); }
+    .h-hero-meta { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+    .h-hero h1 { color: white; font-size: clamp(40px, 8vw, 130px); font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; text-transform: uppercase; margin: 0; }
+    .h-hero-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; margin-top: clamp(20px, 4vh, 40px); }
+    .h-hero p { color: rgba(255,255,255,0.85); font-size: clamp(14px, 1.3vw, 17px); max-width: 540px; line-height: 1.5; margin: 0; }
+
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--blue);
+    }
+    @media (max-width: 900px) { .timeline-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .timeline-grid { grid-template-columns: 1fr; } }
+
+    .decade-card {
+      padding: clamp(32px, 4vw, 56px);
+      border-right: 1px solid var(--blue);
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: var(--blue);
+      background: white;
+    }
+    .decade-card:last-child { border-right: none; }
+    @media (max-width: 900px) {
+      .decade-card { aspect-ratio: auto; min-height: 40vh; border-right: none; border-bottom: 1px solid var(--blue); }
+      .decade-card:nth-child(2n) { border-right: none; }
+      .decade-card:nth-child(2n-1) { border-right: 1px solid var(--blue); }
+    }
+    @media (max-width: 480px) {
+      .decade-card { border-right: none !important; }
+    }
+    .decade-num { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--blue-light); }
+    .decade-label { font-size: clamp(32px, 4vw, 56px); font-weight: 800; letter-spacing: -0.03em; text-transform: uppercase; line-height: 0.95; margin: 0; }
+    .decade-count { font-size: clamp(48px, 7vw, 96px); font-weight: 800; line-height: 0.9; color: var(--blue); letter-spacing: -0.04em; }
+    .decade-count-label { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); margin-top: 4px; }
+
+    .placeholder-section {
+      padding: clamp(80px, 12vh, 160px) clamp(24px, 6vw, 80px);
+      text-align: center;
+      border-bottom: 1px solid var(--blue);
+    }
+    .placeholder-section h2 { font-size: clamp(28px, 4vw, 56px); font-weight: 800; letter-spacing: -0.03em; text-transform: uppercase; color: var(--blue); margin: 0 0 24px; line-height: 0.95; }
+    .placeholder-section p { font-size: clamp(14px, 1.3vw, 17px); max-width: 540px; margin: 0 auto; line-height: 1.6; color: var(--blue-light); }
+    .placeholder-tag {
+      display: inline-block;
+      padding: 6px 14px;
+      border: 1px solid var(--blue);
+      color: var(--blue);
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body data-page="historie" class="page-historie">
+
+<div id="nav"></div>
+
+<main>
+  <section class="h-hero">
+    <div class="h-hero-top">
+      <div class="h-hero-meta">Historie · časová osa</div>
+      <div class="h-hero-meta">60+ let výstavby</div>
+    </div>
+    <h1>Historie</h1>
+    <div class="h-hero-bottom">
+      <p>Vývoj pražských mimoúrovňových křižovatek od prvních staveb v 60. letech až po současné rekonstrukce.</p>
+    </div>
+  </section>
+
+  <div class="timeline-grid">
+    <div class="decade-card">
+      <div class="decade-num">01 / 04</div>
+      <h2 class="decade-label">70. léta</h2>
+      <div>
+        <div class="decade-count">22</div>
+        <div class="decade-count-label">křižovatek</div>
+      </div>
+    </div>
+    <div class="decade-card">
+      <div class="decade-num">02 / 04</div>
+      <h2 class="decade-label">80. léta</h2>
+      <div>
+        <div class="decade-count">02</div>
+        <div class="decade-count-label">křižovatky</div>
+      </div>
+    </div>
+    <div class="decade-card">
+      <div class="decade-num">03 / 04</div>
+      <h2 class="decade-label">90. léta</h2>
+      <div>
+        <div class="decade-count">07</div>
+        <div class="decade-count-label">křižovatek</div>
+      </div>
+    </div>
+    <div class="decade-card">
+      <div class="decade-num">04 / 04</div>
+      <h2 class="decade-label">Po 2000</h2>
+      <div>
+        <div class="decade-count">16</div>
+        <div class="decade-count-label">křižovatek</div>
+      </div>
+    </div>
+  </div>
+
+  <section class="placeholder-section">
+    <div class="placeholder-tag">Připravujeme</div>
+    <h2>Detailní časová osa</h2>
+    <p>Pro každé období doplníme kontext: dobové fotky, plánovací dokumenty, klíčové stavby a jejich vliv na rozvoj pražské sítě.</p>
+  </section>
+</main>
+
+<script src="js/nav.js"></script>
+</body>
+</html>

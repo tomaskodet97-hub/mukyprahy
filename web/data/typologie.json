@@ -1,0 +1,114 @@
+[
+  {
+    "slug": "kosodelna",
+    "nazev": "Kosodélná",
+    "kategorie": "S křižnými body",
+    "popis": "Čtyři jednosměrné větve jsou rovnoměrně rozložené kolem mostního objektu. Méně významná komunikace C, D, dovoluje odbočení vlevo s křižnými body. Jedná se o plošně úspornou variantu, často realizovanou ve městech. Typickým pražským příkladem je 2054 U Bulhara.",
+    "priklad_v_praze": "U Bulhara (TSK 2054)"
+  },
+  {
+    "slug": "osmickova",
+    "nazev": "Osmičková",
+    "kategorie": "S křižnými body",
+    "popis": "Dvě oboustranné větve jsou umístěny v protilehlých kvadrantech křižovatky. Méně významná komunikace se směry jízdy C, D povoluje odbočení vlevo, jsou tak obsaženy křižné body. Umožňuje-li se zvolení kvadrantů, upřednostní se řešení, při kterém je výjezdová větev před mostem a může tak mít větší poloměr. V Praze zastoupena například jako 9097.",
+    "priklad_v_praze": "9097 Novopacká × Budovatelská"
+  },
+  {
+    "slug": "deltova",
+    "nazev": "Deltová",
+    "kategorie": "S křižnými body",
+    "popis": "Větve jsou obousměrné, rozmístěné ve dvou protilehlých kvadrantech. Z méně významné komunikace je povoleno odbočení vlevo, tudíž jsou realizovány křižné body. Reprezentována 10083.",
+    "priklad_v_praze": "10083 Štěrboholská spojka × Národních hrdinů"
+  },
+  {
+    "slug": "jednovetvova",
+    "nazev": "Jednovětvová",
+    "kategorie": "S křižnými body",
+    "popis": "Nejjednodušší typ mimoúrovňové křižovatky, z obou komunikací je povoleno odbočení vlevo, všesměrná pouze pro nerozdělené komunikace, směry bez křižných bodů A a C. Zastoupena jako 8038.",
+    "priklad_v_praze": "8038 (Vychovatelna)"
+  },
+  {
+    "slug": "prstencovita",
+    "nazev": "Prstencovitá",
+    "kategorie": "S křižnými body",
+    "popis": "Čtyři jednosměrné větve jsou rovnoměrně rozložené kolem mostního objektu. Méně významná komunikace C, D, dovoluje odbočení vlevo s křižnými body. Jedná se o plošně úspornou variantu, často realizovanou ve městech.",
+    "priklad_v_praze": "—"
+  },
+  {
+    "slug": "srdcova",
+    "nazev": "Srdcová",
+    "kategorie": "S průpletovými úseky",
+    "popis": "Má jeden průpletový úsek, navrhuje se pro stykové křížení směrově rozdělených i nerozdělených komunikací, vhodná pro výhledové přestavbě stykové křižovatky na průsečnou, popřípadě snadného převedení kolejového tělesa MHD přes křižovatku. Vyžaduje pouze jediný mostní objekt. Často jako etapová čtyřlístková.",
+    "priklad_v_praze": "7027 Hlávkův most × N. k. Jaroše"
+  },
+  {
+    "slug": "ctyrlistkova",
+    "nazev": "Čtyřlístková",
+    "kategorie": "S průpletovými úseky",
+    "popis": "Projektuje se jako MUK dvou stejně významných komunikací, průpletové úseky na průběžných osách jsou při naplnění kapacity nebezpečné a snižují plynulost jízdy. Vozidla se ve stejnou dobu zařazují i vybočují. Vyžaduje jeden mostní objekt, v současné době se předělávají na bezpečnější typy.",
+    "priklad_v_praze": "—"
+  },
+  {
+    "slug": "trojlistkova",
+    "nazev": "Trojlístková",
+    "kategorie": "S průpletovými úseky",
+    "popis": "Počet průpletových úseků se snížil na 2, nicméně vynechání lístku pro levé odbočení vyžaduje vybudování dalších dvou objektů. Vhodné pro situace se silným proudem vlevo.",
+    "priklad_v_praze": "—"
+  },
+  {
+    "slug": "dvojlistkova",
+    "nazev": "Dvojlístková",
+    "kategorie": "S průpletovými úseky",
+    "popis": "Má vysoké stavební náklady, vyžaduje 5 až 6 objektů, pokud na ní kapacitně nevyhovují vratné rampy, dají se nahradit polopřímými s vyšší kapacitou provozu. Má pouze jeden průpletový úsek.",
+    "priklad_v_praze": "—"
+  },
+  {
+    "slug": "trubkovita",
+    "nazev": "Trubkovitá",
+    "kategorie": "Bez průpletových úseků",
+    "popis": "Tato MUK má kromě dvou direktivních ramp využívanými pro pravé odbočení jen jednu obousměrnou rampu. Poloha trubkovité rampy se navrhuje ve směru většího dopravního zatížení. Je vhodná pro spojení radiál s okruhem, pražským příkladem je 9027.",
+    "priklad_v_praze": "9027 Kbelská × Novopacká"
+  },
+  {
+    "slug": "sdruzena_trubkovita",
+    "nazev": "Sdružená trubkovitá",
+    "kategorie": "Bez průpletových úseků",
+    "popis": "Vzniká spojením dvou trubkových křižovatek do průsečné, jedna komunikace bývá výrazně důležitější, pro vedlejší je přímý průjezd zakřiven, takovéto provedení vyžaduje dva objekty.",
+    "priklad_v_praze": "9095 Cínovecká × Kostelecká"
+  },
+  {
+    "slug": "dvojlistkova_s_vystridanym_dvojlistkem",
+    "nazev": "Dvojlístková s vystřídaným dvojlístkem",
+    "kategorie": "Bez průpletových úseků",
+    "popis": "Semidirektivní rampy se převážně používají pro odbočení vlevo. Vyžaduje pět objektů.",
+    "priklad_v_praze": "4016 5. května × Jižní spojka"
+  },
+  {
+    "slug": "rozstepna",
+    "nazev": "Rozštěpná",
+    "kategorie": "Útvarové",
+    "popis": "Někdy může mít charakter stykové křižovatky, kde jedna komunikace je významnější, má tři paprsky, někdy však bývá směr rozvětven do dvou, vyžaduje dva objekty, nebo jeden se třemi úrovněmi. Její řešení lze zjednodušit potlačením některého ramena. Nejznámější jako 5033.",
+    "priklad_v_praze": "5033 Strakonická × Barrandovský most"
+  },
+  {
+    "slug": "spiralova",
+    "nazev": "Spirálová",
+    "kategorie": "Útvarové",
+    "popis": "Vyžaduje pět objektů, má varianty se začátkem levého odbočení, buď začíná až za bodem křižovatky, nebo je provedeno před hlavním objektem.",
+    "priklad_v_praze": "—"
+  },
+  {
+    "slug": "turbinova",
+    "nazev": "Turbínová",
+    "kategorie": "Útvarové",
+    "popis": "Odbočení pravá i levá se nacházejí v různých místech, vždy však před hlavním objektem, celkem jich vyžaduje pět.",
+    "priklad_v_praze": "—"
+  },
+  {
+    "slug": "hvezdicova",
+    "nazev": "Hvězdicová",
+    "kategorie": "Útvarové",
+    "popis": "Velmi komplikovaná, vyžaduje třípatrový objekt, čtvrtá úroveň je v přízemí. Používá se na křížení významných komunikací stejného významu a se silnými levými proudy, vyžaduje však malou plochu.",
+    "priklad_v_praze": "—"
+  }
+]

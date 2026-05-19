@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Křižovatky mimo úroveň Prahy</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    body { overflow-x: hidden; }
+    body[data-page="domu"] main { padding: 0; max-width: none; }
+
+    body[data-page="domu"] .nav { position: fixed; top: 0; left: 0; right: 0; background: transparent; border-bottom: 1px solid transparent; transition: all 0.25s ease; }
+    body[data-page="domu"] .nav .nav-logo,
+    body[data-page="domu"] .nav .nav-logo span { color: white; }
+    body[data-page="domu"] .nav .nav-logo svg path,
+    body[data-page="domu"] .nav .nav-logo svg circle { stroke: white !important; }
+    body[data-page="domu"] .nav .nav-links a { color: rgba(255,255,255,0.85); }
+    body[data-page="domu"] .nav .nav-links a:hover { background: rgba(255,255,255,0.12); color: white; }
+    body[data-page="domu"] .nav.scrolled { background: white; border-bottom-color: var(--border); }
+    body[data-page="domu"] .nav.scrolled .nav-logo,
+    body[data-page="domu"] .nav.scrolled .nav-logo span { color: var(--primary); }
+    body[data-page="domu"] .nav.scrolled .nav-logo svg path,
+    body[data-page="domu"] .nav.scrolled .nav-logo svg circle { stroke: var(--primary) !important; }
+    body[data-page="domu"] .nav.scrolled .nav-links a { color: var(--text-muted); }
+    body[data-page="domu"] .nav.scrolled .nav-links a:hover { background: var(--primary-tint); color: var(--primary); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      background: var(--primary);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 100px 0 48px;
+      position: relative;
+      overflow: hidden;
+    }
+    .strip-wrap {
+      position: relative;
+      width: 100%;
+      height: 62vh;
+      max-height: 720px;
+      min-height: 360px;
+      overflow: hidden;
+      background: var(--primary);
+    }
+    .hero-strip {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      overflow: hidden;
+    }
+    .hero-strip-track {
+      display: flex;
+      gap: 0;
+      animation: scroll-x 480s linear infinite;
+      will-change: transform;
+      width: max-content;
+      height: 100%;
+      flex-wrap: nowrap;
+      font-size: 0;
+      line-height: 0;
+    }
+    .hero-strip-track img {
+      height: 100%;
+      width: auto;
+      aspect-ratio: 1;
+      object-fit: cover;
+      display: block;
+      flex-shrink: 0;
+      margin-right: -1px;
+    }
+    @keyframes scroll-x {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(30, 61, 124, 0.55);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .hero-title {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: clamp(8px, 2vh, 24px);
+      padding: 7% 9%;
+      text-align: center;
+      color: white;
+      pointer-events: none;
+    }
+    .hero-title .line {
+      display: block;
+      font-size: clamp(34px, 7.5vw, 120px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.025em;
+      text-transform: uppercase;
+      width: 100%;
+    }
+    .hero-subtitle {
+      margin-top: 32px;
+      color: white;
+      font-size: clamp(13px, 1.5vw, 17px);
+      font-weight: 400;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      opacity: 0.92;
+      text-align: center;
+      padding: 0 24px;
+    }
+
+    /* CTAs */
+    .ctas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 90vh;
+    }
+    .cta {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 32px;
+      text-align: center;
+      text-decoration: none;
+      transition: background 0.25s ease;
+      position: relative;
+    }
+    .cta:hover { text-decoration: none; }
+    .cta-blue { background: #142B5C; color: white; }
+    .cta-blue:hover { background: #0E1F44; }
+    .cta-white { background: white; color: var(--primary); border-left: 1px solid var(--border); }
+    .cta-white:hover { background: var(--bg-alt); }
+    .cta-main {
+      font-size: clamp(64px, 12vw, 200px);
+      font-weight: 800;
+      line-height: 0.92;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+    }
+    .cta-main span { display: block; }
+    .cta-sub {
+      margin-top: 22px;
+      font-size: clamp(15px, 1.8vw, 21px);
+      opacity: 0.85;
+      letter-spacing: 0.04em;
+      font-weight: 400;
+    }
+    .cta-arrows {
+      margin-top: 42px;
+      display: flex;
+      gap: clamp(10px, 1.4vw, 22px);
+      align-items: center;
+      justify-content: center;
+    }
+    .cta-arrows svg {
+      width: clamp(28px, 3.4vw, 52px);
+      height: clamp(28px, 3.4vw, 52px);
+      display: block;
+      stroke: currentColor;
+      animation: arrow-pulse 1.6s ease-in-out infinite;
+    }
+    .cta-arrows.left svg:nth-child(1) { animation-delay: 0.45s; opacity: 0.55; }
+    .cta-arrows.left svg:nth-child(2) { animation-delay: 0.30s; opacity: 0.75; }
+    .cta-arrows.left svg:nth-child(3) { animation-delay: 0.15s; opacity: 0.90; }
+    .cta-arrows.left svg:nth-child(4) { animation-delay: 0.00s; opacity: 1.00; }
+    .cta-arrows.right svg:nth-child(1) { animation-delay: 0.00s; opacity: 1.00; }
+    .cta-arrows.right svg:nth-child(2) { animation-delay: 0.15s; opacity: 0.90; }
+    .cta-arrows.right svg:nth-child(3) { animation-delay: 0.30s; opacity: 0.75; }
+    .cta-arrows.right svg:nth-child(4) { animation-delay: 0.45s; opacity: 0.55; }
+    @keyframes arrow-pulse {
+      0%, 100% { transform: translateX(0); }
+      50%      { transform: translateX(var(--arrow-shift, 8px)); }
+    }
+    .cta-arrows.left  { --arrow-shift: -8px; }
+    .cta-arrows.right { --arrow-shift:  8px; }
+    @media (max-width: 700px) {
+      .ctas { grid-template-columns: 1fr; }
+      .cta-white { border-left: none; border-top: 1px solid var(--border); }
+      .cta { padding: 56px 24px; min-height: 50vh; }
+    }
+
+    .stats-strip {
+      background: var(--primary);
+      color: white;
+      padding: 88px 24px;
+      text-align: center;
+    }
+    .stats-strip-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+    }
+    .stats-strip .stat-num {
+      font-size: clamp(48px, 8vw, 100px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .stats-strip .stat-label {
+      margin-top: 10px;
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    @media (max-width: 700px) {
+      .stats-strip-grid { grid-template-columns: 1fr; gap: 40px; }
+      .stats-strip { padding: 56px 24px; }
+    }
+
+    .footer { margin-top: 0; }
+  </style>
+</head>
+<body data-page="domu">
+
+<div id="nav"></div>
+
+<main>
+
+  <section class="hero">
+    <div class="strip-wrap">
+      <div class="hero-strip">
+        <div class="hero-strip-track" id="strip-track"></div>
+      </div>
+      <div class="hero-overlay"></div>
+      <div class="hero-title">
+        <span class="line">Křižovatky</span>
+        <span class="line">mimo pražskou</span>
+        <span class="line">úroveň</span>
+      </div>
+    </div>
+    <p class="hero-subtitle">pražské mimoúrovňové křižovatky</p>
+  </section>
+
+  <section class="ctas">
+    <a href="hra.html" class="cta cta-blue">
+      <div class="cta-main"><span>Play</span><span>me</span></div>
+      <div class="cta-sub">mimoúrovňově</div>
+      <div class="cta-arrows left">
+        <svg viewBox="0 0 40 40" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8 L 12 20 L 28 32"/></svg>
+        <svg viewBox="0 0 40 40" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8 L 12 20 L 28 32"/></svg>
+        <svg viewBox="0 0 40 40" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8 L 12 20 L 28 32"/></svg>
+        <svg viewBox="0 0 40 40" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8 L 12 20 L 28 32"/></svg>
+      </div>
+    </a>
+    <a href="katalog.html" class="cta cta-white">
+      <div class="cta-main"><span>Ride</span><span>me</span></div>
+      <div class="cta-sub">mimo úroveň</div>
+      <div class="cta-arrows right">
+        <svg viewBox="0 0 40 40" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8 L 28 20 L 12 32"/></svg>
+        <svg viewBox="0 0 40 40" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8 L 28 20 L 12 32"/></svg>
+        <svg viewBox="0 0 40 40" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8 L 28 20 L 12 32"/></svg>
+        <svg viewBox="0 0 40 40" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8 L 28 20 L 12 32"/></svg>
+      </div>
+    </a>
+  </section>
+
+  <section class="stats-strip">
+    <div class="stats-strip-grid">
+      <div><div class="stat-num">47</div><div class="stat-label">křižovatek v Praze</div></div>
+      <div><div class="stat-num">16</div><div class="stat-label">typů dle ČSN 73 6102</div></div>
+      <div><div class="stat-num">60+</div><div class="stat-label">let historie</div></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>47 křižovatek · 16 typů · data z TSK Praha</div>
+    <div>Diplomová práce · Tomáš Kodet</div>
+  </div>
+</footer>
+
+<script src="js/nav.js"></script>
+<script src="js/data-bundle.js"></script>
+<script>
+  (function() {
+    const krizovatky = window.__DATA__.krizovatky;
+    const track = document.getElementById("strip-track");
+    const items = krizovatky.map(k =>
+      `<img src="img/krizovatky/${k.tsk}/ortofoto_strip.jpg" alt="" loading="eager">`
+    ).join("");
+    track.innerHTML = items + items;
+  })();
+  window.addEventListener("scroll", () => {
+    const nav = document.querySelector(".nav");
+    if (!nav) return;
+    nav.classList.toggle("scrolled", window.scrollY > 50);
+  });
+</script>
+</body>
+</html>

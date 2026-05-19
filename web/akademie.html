@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Typologie · pražské mimoúrovňové křižovatky</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root {
+      --blue: #1E3D7C;
+      --blue-light: #6E89B8;
+      --blue-tint: rgba(30,61,124,0.08);
+    }
+    body[data-page="akademie"] main { padding: 0; max-width: none; }
+    body[data-page="akademie"] .nav { border-radius: 0; }
+    .akademie * { border-radius: 0 !important; }
+    .akademie { color: var(--blue); }
+
+    /* ========= HERO (compact) ========= */
+    .akademie-hero {
+      background: var(--blue);
+      color: white;
+      padding: clamp(80px, 12vh, 130px) clamp(24px, 6vw, 80px) clamp(28px, 4vh, 48px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: auto;
+    }
+    .akademie-hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-bottom: clamp(24px, 5vh, 56px);
+    }
+    .akademie-hero-meta, .akademie-hero-count {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.75);
+    }
+    .akademie-hero h1 {
+      color: white;
+      font-size: clamp(40px, 8vw, 130px);
+      font-weight: 800;
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .akademie-hero-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 32px;
+      flex-wrap: wrap;
+      margin-top: clamp(20px, 4vh, 40px);
+    }
+    .akademie-hero p {
+      color: rgba(255,255,255,0.85);
+      font-size: clamp(14px, 1.3vw, 17px);
+      max-width: 540px;
+      line-height: 1.5;
+      margin: 0;
+    }
+    .akademie-hero-scroll {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.75);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .akademie-hero-scroll::after {
+      content: "";
+      width: 60px;
+      height: 1px;
+      background: rgba(255,255,255,0.5);
+    }
+
+    /* ========= FILTER STRIP ========= */
+    .akademie-filters {
+      background: white;
+      border-bottom: 1px solid var(--blue);
+      padding: 18px clamp(24px, 6vw, 80px);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .akademie-filters-label {
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+      margin-right: 8px;
+    }
+    .filter-btn {
+      padding: 8px 14px;
+      background: white;
+      border: 1px solid var(--blue);
+      color: var(--blue);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .filter-btn:hover { background: var(--blue-tint); }
+    .filter-btn.active { background: var(--blue); color: white; }
+
+    /* ========= CATEGORY SECTIONS ========= */
+    .category-block {
+      border-bottom: 1px solid var(--blue);
+      color: var(--blue);
+    }
+    .category-block.dark {
+      background: var(--blue);
+      color: white;
+    }
+    .category-header {
+      padding: clamp(28px, 4vh, 48px) clamp(24px, 6vw, 80px) clamp(20px, 3vh, 36px);
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: clamp(16px, 2vw, 28px);
+      align-items: baseline;
+    }
+    .category-num {
+      font-size: clamp(18px, 1.6vw, 24px);
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      opacity: 0.55;
+      font-variant-numeric: tabular-nums;
+    }
+    .category-name {
+      font-size: clamp(18px, 2vw, 30px);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.015em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .types-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-top: 1px solid currentColor;
+    }
+    .category-block.dark .types-grid { border-top-color: rgba(255,255,255,0.3); }
+    @media (max-width: 1100px) { .types-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 800px)  { .types-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px)  { .types-grid { grid-template-columns: 1fr; } }
+
+    .type-card {
+      position: relative;
+      background: transparent;
+      border: none;
+      border-right: 1px solid currentColor;
+      border-bottom: 1px solid currentColor;
+      padding: 0;
+      text-align: left;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      overflow: hidden;
+      font-family: inherit;
+      color: inherit;
+    }
+    .category-block.dark .type-card {
+      border-right-color: rgba(255,255,255,0.3);
+      border-bottom-color: rgba(255,255,255,0.3);
+    }
+    .type-card:hover { background: var(--blue-tint); }
+    .category-block.dark .type-card:hover { background: rgba(255,255,255,0.08); }
+
+    .type-card-inner {
+      padding: 24px 22px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      height: 100%;
+    }
+    .type-num {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.55;
+      font-variant-numeric: tabular-nums;
+    }
+    .type-img-wrap {
+      aspect-ratio: 1;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6%;
+      overflow: hidden;
+      transition: transform 0.4s ease;
+    }
+    .type-card:hover .type-img-wrap { transform: scale(1.04); }
+    .type-img-wrap img {
+      max-width: 100%; max-height: 100%;
+      width: auto; height: auto;
+      object-fit: contain;
+      display: block;
+    }
+    .type-name {
+      font-size: clamp(18px, 1.6vw, 24px);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      margin-top: auto;
+    }
+    .type-card-arrow {
+      position: absolute;
+      top: 22px;
+      right: 22px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      transform: translate(-8px, 8px);
+    }
+    .type-card:hover .type-card-arrow { opacity: 1; transform: translate(0, 0); }
+
+    /* ========= MODAL ========= */
+    .modal-bg { position: fixed; inset: 0; background: rgba(20, 35, 70, 0.6); display: none; align-items: center; justify-content: center; z-index: 200; padding: 0; }
+    .modal-bg.open { display: flex; }
+    .modal { background: white; max-width: 1100px; width: 100%; max-height: 100vh; height: 100%; overflow-y: auto; position: relative; color: var(--blue); }
+    .modal-close { position: absolute; top: 24px; right: 24px; width: 44px; height: 44px; background: white; border: 1px solid var(--blue); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1; color: var(--blue); font-size: 20px; line-height: 1; }
+    .modal-close:hover { background: var(--blue); color: white; }
+    .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; min-height: 100vh; }
+    .modal-img-side { background: white; display: flex; align-items: center; justify-content: center; padding: 6%; border-right: 1px solid var(--blue); }
+    .modal-img-side img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; }
+    .modal-content-side { padding: clamp(32px, 5vw, 64px); display: flex; flex-direction: column; gap: 28px; color: var(--blue); }
+    .modal-tag { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); }
+    .modal-h2 { color: var(--blue); margin: 0; font-size: clamp(32px, 4vw, 56px); font-weight: 800; letter-spacing: -0.03em; text-transform: uppercase; line-height: 0.95; }
+    .modal-popis { font-size: clamp(14px, 1.3vw, 16px); line-height: 1.65; color: var(--blue); }
+    .modal-section-h3 { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); margin-bottom: 14px; font-weight: 500; padding-bottom: 12px; border-bottom: 1px solid var(--blue); }
+    .priklady-list { list-style: none; display: flex; flex-direction: column; padding: 0; margin: 0; color: var(--blue); }
+    .priklady-list li { font-size: 14px; padding: 12px 0; border-bottom: 1px solid var(--blue-tint); display: flex; align-items: center; gap: 14px; color: var(--blue); }
+    .priklady-list li:last-child { border-bottom: none; }
+    .priklady-list .pill { background: var(--blue-tint); color: var(--blue); padding: 4px 10px; font-size: 10px; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; }
+    .priklady-list .tsk-num { font-size: 11px; color: var(--blue-light); font-variant-numeric: tabular-nums; margin-left: auto; letter-spacing: 0.1em; }
+    .empty-msg { font-size: 14px; color: var(--blue-light); font-style: italic; }
+    @media (max-width: 800px) {
+      .modal-grid { grid-template-columns: 1fr; }
+      .modal-img-side { border-right: none; border-bottom: 1px solid var(--blue); aspect-ratio: 1; }
+      .modal-content-side { padding: 32px 24px; }
+    }
+  </style>
+</head>
+<body data-page="akademie" class="akademie">
+
+<div id="nav"></div>
+
+<main>
+  <section class="akademie-hero">
+    <div class="akademie-hero-top">
+      <div class="akademie-hero-meta">Akademie · ČSN 73 6102</div>
+      <div class="akademie-hero-count">16 typů · 4 kategorie</div>
+    </div>
+    <h1>Typologie</h1>
+    <div class="akademie-hero-bottom">
+      <p>Šestnáct typů mimoúrovňových křižovatek dle technické normy. Schémata, výklad a pražské příklady.</p>
+      <div class="akademie-hero-scroll">Scroll</div>
+    </div>
+  </section>
+
+  <div class="akademie-filters" id="filter-bar"></div>
+
+  <div id="categories-container"></div>
+</main>
+
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
+
+<script src="js/nav.js"></script>
+<script src="js/data-bundle.js"></script>
+<script src="js/data.js"></script>
+<script>
+(async () => {
+  const { typologie } = await AppData.loadAll();
+  const krizovatky = await AppData.loadKrizovatky();
+  const container = document.getElementById("categories-container");
+  const filterBar = document.getElementById("filter-bar");
+  const modalBg = document.getElementById("modal-bg");
+  const modal = document.getElementById("modal");
+  const kategorie = AppData.KATEGORIE_ORDER;
+  let activeFilter = "Vše";
+
+  function renderFilters() {
+    const all = ["Vše", ...kategorie];
+    filterBar.innerHTML =
+      `<span class="akademie-filters-label">Filtr</span>` +
+      all.map(k => `<button class="filter-btn${k === activeFilter ? ' active' : ''}" data-cat="${k}">${k}</button>`).join("");
+    filterBar.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeFilter = btn.dataset.cat;
+        renderFilters();
+        renderCategories();
+      });
+    });
+  }
+
+  function renderCategories() {
+    const cats = activeFilter === "Vše" ? kategorie : [activeFilter];
+    let typeCounter = 0;
+    container.innerHTML = cats.map((cat, catIdx) => {
+      const items = typologie.filter(t => t.kategorie === cat);
+      if (items.length === 0) return "";
+      const isDark = catIdx % 2 === 1;
+      const catNum = String(catIdx + 1).padStart(2, "0");
+      return `
+        <section class="category-block${isDark ? ' dark' : ''}">
+          <header class="category-header">
+            <div class="category-num">${catNum}</div>
+            <h2 class="category-name">${cat}</h2>
+          </header>
+          <div class="types-grid">
+            ${items.map((t) => {
+              typeCounter++;
+              const num = String(typeCounter).padStart(2, "0");
+              return `
+                <button class="type-card" data-slug="${t.slug}">
+                  <div class="type-card-inner">
+                    <div class="type-num">${num} / ${typologie.length}</div>
+                    <div class="type-img-wrap"><img src="${AppData.typologyPath(t.slug)}" alt="${t.nazev}" loading="lazy"></div>
+                    <div class="type-name">${t.nazev}</div>
+                  </div>
+                  <div class="type-card-arrow">
+                    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M8 24 L 24 8 M 12 8 L 24 8 L 24 20"/>
+                    </svg>
+                  </div>
+                </button>`;
+            }).join("")}
+          </div>
+        </section>`;
+    }).join("");
+    container.querySelectorAll(".type-card").forEach(c => {
+      c.addEventListener("click", () => openModal(c.dataset.slug));
+    });
+  }
+
+  function openModal(slug) {
+    const t = typologie.find(x => x.slug === slug);
+    if (!t) return;
+    const priklady = krizovatky.filter(k => k.typ_slug === slug);
+    modal.innerHTML = `
+      <button class="modal-close" aria-label="Zavřít">×</button>
+      <div class="modal-grid">
+        <div class="modal-img-side"><img src="${AppData.typologyPath(t.slug)}" alt="${t.nazev}"></div>
+        <div class="modal-content-side">
+          <div class="modal-tag">${t.kategorie}</div>
+          <h2 class="modal-h2">${t.nazev}</h2>
+          <div class="modal-popis">${t.popis}</div>
+          <div>
+            <h3 class="modal-section-h3">Pražské příklady · ${priklady.length}</h3>
+            ${priklady.length === 0
+              ? '<p class="empty-msg">Žádný zástupce v naší databázi 47 sledovaných pražských křižovatek.</p>'
+              : '<ul class="priklady-list">' + priklady.map(k =>
+                  `<li><span class="pill">${k.doba_vystavby}</span><span>${k.ulice}</span><span class="tsk-num">TSK ${k.tsk}</span></li>`
+                ).join("") + '</ul>'}
+          </div>
+        </div>
+      </div>`;
+    modalBg.classList.add("open");
+    modal.querySelector(".modal-close").addEventListener("click", closeModal);
+  }
+  function closeModal() { modalBg.classList.remove("open"); }
+  modalBg.addEventListener("click", (e) => { if (e.target === modalBg) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  renderFilters();
+  renderCategories();
+})();
+</script>
+</body>
+</html>

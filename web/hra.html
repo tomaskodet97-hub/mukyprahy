@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hra · pražské mimoúrovňové křižovatky</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root {
+      --blue: #1E3D7C;
+      --blue-light: #6E89B8;
+      --blue-tint: rgba(30,61,124,0.08);
+    }
+    body[data-page="hra"] main { padding: 0; max-width: none; }
+    body[data-page="hra"] .nav { border-radius: 0; }
+    .page-hra * { border-radius: 0 !important; }
+    .page-hra { color: var(--blue); }
+
+    /* HERO */
+    .hra-hero {
+      background: var(--blue);
+      color: white;
+      padding: clamp(80px, 12vh, 130px) clamp(24px, 6vw, 80px) clamp(28px, 4vh, 48px);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .hra-hero-top { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; margin-bottom: clamp(24px, 5vh, 56px); }
+    .hra-hero-meta { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+    .hra-hero h1 { color: white; font-size: clamp(40px, 8vw, 130px); font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; text-transform: uppercase; margin: 0; }
+    .hra-hero-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; margin-top: clamp(20px, 4vh, 40px); }
+    .hra-hero p { color: rgba(255,255,255,0.85); font-size: clamp(14px, 1.3vw, 17px); max-width: 540px; line-height: 1.5; margin: 0; }
+
+    /* CHARACTER SELECT — 3 big squares */
+    .char-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--blue);
+    }
+    @media (max-width: 800px) { .char-grid { grid-template-columns: 1fr; } }
+    .char-card {
+      position: relative;
+      aspect-ratio: 1;
+      background: white;
+      border: none;
+      border-right: 1px solid var(--blue);
+      padding: clamp(32px, 4vw, 56px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: left;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--blue);
+      transition: background 0.3s;
+      overflow: hidden;
+    }
+    .char-card:last-child { border-right: none; }
+    @media (max-width: 800px) {
+      .char-card { aspect-ratio: auto; min-height: 60vh; border-right: none; border-bottom: 1px solid var(--blue); }
+      .char-card:last-child { border-bottom: none; }
+    }
+    .char-card:not(.disabled):hover { background: var(--blue); color: white; }
+    .char-card.disabled { background: var(--blue-tint); color: var(--blue-light); cursor: not-allowed; }
+    .char-card.disabled .char-arrow { opacity: 0; }
+    .char-num { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; opacity: 0.6; }
+    .char-name { font-size: clamp(40px, 5vw, 80px); font-weight: 800; line-height: 0.95; letter-spacing: -0.035em; text-transform: uppercase; margin: 0; }
+    .char-desc { font-size: clamp(13px, 1.2vw, 16px); line-height: 1.5; max-width: 320px; }
+    .char-meta { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.7; }
+    .char-soon-badge { position: absolute; top: clamp(32px, 4vw, 56px); right: clamp(32px, 4vw, 56px); font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; }
+    .char-arrow { position: absolute; bottom: clamp(32px, 4vw, 56px); right: clamp(32px, 4vw, 56px); transition: transform 0.3s; }
+    .char-card:not(.disabled):hover .char-arrow { transform: translate(8px, -8px); }
+
+    /* When inside game: lock page to viewport */
+    body.in-game { height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+    body.in-game .nav { flex-shrink: 0; }
+    body.in-game main { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* GAME — fits in viewport, no scroll */
+    .game-frame {
+      position: relative;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .game-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px clamp(16px, 3vw, 32px);
+      border-bottom: 1px solid var(--blue);
+      background: white;
+      flex-shrink: 0;
+      gap: 10px;
+      flex-wrap: wrap;
+      min-height: 36px;
+    }
+    .game-progress { display: flex; gap: 2px; }
+    .progress-dot { width: 10px; height: 3px; background: var(--blue-tint); transition: background 0.2s; }
+    .progress-dot.done { background: var(--blue); }
+    .progress-dot.wrong { background: #C25A5F; }
+    .progress-dot.current { background: var(--blue); outline: 1px solid var(--blue); outline-offset: 1px; }
+    .game-stats { display: flex; gap: 14px; font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--blue-light); }
+    .game-stats strong { color: var(--blue); font-size: 12px; font-weight: 800; margin-right: 4px; letter-spacing: -0.02em; }
+    .phase-tag { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--blue); padding: 2px 7px; border: 1px solid var(--blue); }
+
+    /* Square cell sizing — capped by viewport height to never overflow */
+    :root { --game-reserved: 140px; }
+    .game-frame.answered { --game-reserved: 200px; }
+    .game-body {
+      flex: 1;
+      min-height: 0;
+      padding: clamp(10px, 1.5vh, 20px) clamp(16px, 3vw, 32px);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: clamp(12px, 2vw, 24px);
+      align-items: center;
+      justify-items: center;
+      transition: padding 0.2s;
+    }
+    .game-frame.answered .game-body { padding-bottom: 56px; }
+    @media (max-width: 900px) { .game-body { grid-template-columns: 1fr; padding: 8px; gap: 8px; } }
+
+    .game-question-img {
+      background: white;
+      border: none;
+      width: min(100%, calc(100vh - var(--game-reserved)));
+      height: min(100%, calc(100vh - var(--game-reserved)));
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      padding: 0;
+    }
+    /* Phase 2: scheme — smaller, less upscaling = less visible blur */
+    .game-question-img.phase2 {
+      width: min(70%, calc((100vh - var(--game-reserved)) * 0.75));
+      height: min(70%, calc((100vh - var(--game-reserved)) * 0.75));
+      padding: 3%;
+    }
+    .game-question-img img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; display: block; }
+    .game-question-img.cover img { width: 100%; height: 100%; object-fit: cover; }
+
+    .game-question-side {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Phase 1 answers (cards with schemas) — same square as ortofoto */
+    .answers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      border-top: 1px solid var(--blue);
+      border-left: 1px solid var(--blue);
+      width: min(100%, calc(100vh - var(--game-reserved)));
+      height: min(100%, calc(100vh - var(--game-reserved)));
+      aspect-ratio: 1;
+    }
+    .answer {
+      position: relative;
+      background: white;
+      border: none;
+      border-right: 1px solid var(--blue);
+      border-bottom: 1px solid var(--blue);
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s;
+      font-family: inherit;
+      color: var(--blue);
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .answer:not(:disabled):hover { background: var(--blue-tint); }
+    .answer-img-wrap { flex: 1; min-height: 0; background: white; display: flex; align-items: center; justify-content: center; padding: 6%; }
+    .answer-img-wrap img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+    .answer-name { padding: 4px 8px 6px; font-size: clamp(9px, 0.75vw, 11px); font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; line-height: 1.15; color: var(--blue); border-top: 1px solid var(--blue); }
+    .answer.correct { background: var(--blue); color: white; }
+    .answer.correct .answer-name { color: white; }
+    .answer.wrong { background: rgba(194, 90, 95, 0.08); }
+    .answer:disabled { cursor: default; }
+
+    /* Phase 2 answers (text only) — compact list */
+    .answers-list {
+      display: grid;
+      grid-template-rows: repeat(4, 1fr);
+      grid-template-columns: 1fr;
+      border-top: 1px solid var(--blue);
+      width: 100%;
+      max-width: 380px;
+      height: min(100%, calc((100vh - var(--game-reserved)) * 0.75));
+      max-height: 100%;
+    }
+    .answer-text {
+      background: white;
+      border: none;
+      border-bottom: 1px solid var(--blue);
+      padding: 6px clamp(12px, 1.5vw, 20px);
+      cursor: pointer;
+      text-align: left;
+      transition: background 0.2s;
+      font-family: inherit;
+      color: var(--blue);
+      font-size: clamp(11px, 0.85vw, 13px);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 0;
+    }
+    .answer-text:not(:disabled):hover { background: var(--blue-tint); }
+    .answer-text.correct { background: var(--blue); color: white; }
+    .answer-text.wrong { background: rgba(194, 90, 95, 0.08); }
+    .answer-text:disabled { cursor: default; }
+    .answer-text-letter { font-size: 9px; letter-spacing: 0.22em; color: var(--blue-light); font-weight: 500; }
+    .answer-text.correct .answer-text-letter { color: rgba(255,255,255,0.75); }
+
+    /* Feedback bar — overlay at bottom, doesn't push layout */
+    .feedback-bar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: var(--blue);
+      color: white;
+      padding: 8px clamp(16px, 3vw, 32px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      border-top: 1px solid var(--blue);
+      z-index: 20;
+    }
+    .feedback-bar.wrong { background: white; color: var(--blue); border-top: 1px solid var(--blue); }
+    .feedback-text { font-size: 12px; line-height: 1.35; }
+    .feedback-text strong { font-weight: 800; }
+    .btn-next {
+      background: white;
+      color: var(--blue);
+      border: 1px solid white;
+      padding: 6px 14px;
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .feedback-bar.wrong .btn-next { background: var(--blue); color: white; border-color: var(--blue); }
+    .btn-next:hover { background: transparent; color: white; border-color: white; }
+    .feedback-bar.wrong .btn-next:hover { background: white; color: var(--blue); border-color: var(--blue); }
+
+    /* RESULT */
+    .result {
+      padding: clamp(60px, 10vh, 120px) clamp(24px, 6vw, 80px);
+      background: var(--blue);
+      color: white;
+      min-height: calc(100vh - 60px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .result-top { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+    .result-meta { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+    .result-title { font-size: clamp(40px, 8vw, 130px); font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; line-height: 0.9; margin: clamp(32px, 5vh, 60px) 0; }
+    .result-stats { display: grid; grid-template-columns: repeat(2, 1fr); border-top: 1px solid rgba(255,255,255,0.3); }
+    .result-stat { padding: clamp(24px, 4vh, 40px) 0; border-right: 1px solid rgba(255,255,255,0.3); padding-right: 24px; }
+    .result-stat:last-child { border-right: none; padding-left: 24px; padding-right: 0; }
+    .result-stat-label { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-bottom: 8px; }
+    .result-stat-num { font-size: clamp(48px, 7vw, 96px); font-weight: 800; letter-spacing: -0.04em; line-height: 0.9; }
+    .result-line { font-size: clamp(15px, 1.5vw, 19px); max-width: 540px; line-height: 1.5; color: rgba(255,255,255,0.85); margin-top: clamp(20px, 3vh, 40px); }
+    .result-line-big { color: white; font-size: clamp(28px, 5.5vw, 84px); font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; margin: clamp(32px, 5vh, 60px) 0; max-width: 18ch; }
+    .result-ctas { display: flex; gap: 16px; flex-wrap: wrap; margin-top: clamp(32px, 5vh, 60px); }
+    .btn-result {
+      padding: 18px 32px;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid white;
+      background: white;
+      color: var(--blue);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-result.outline { background: transparent; color: white; }
+    .btn-result:hover { background: var(--blue); color: white; border-color: white; }
+    .btn-result.outline:hover { background: white; color: var(--blue); }
+  </style>
+</head>
+<body data-page="hra" class="page-hra">
+
+<div id="nav"></div>
+
+<main id="app"></main>
+
+<script src="js/nav.js"></script>
+<script src="js/data-bundle.js"></script>
+<script src="js/data.js"></script>
+<script>
+(async () => {
+  const { krizovatky, typologie } = await AppData.loadAll();
+  const app = document.getElementById("app");
+  const TOTAL_QUESTIONS = 20;
+  const PHASE_BREAK = 10;
+
+  function screenCharSelect() {
+    document.body.classList.remove("in-game");
+    app.innerHTML = `
+      <section class="hra-hero">
+        <div class="hra-hero-top">
+          <div class="hra-hero-meta">Hra · 10+10 otázek</div>
+          <div class="hra-hero-meta">3 charaktery</div>
+        </div>
+        <h1>Hra</h1>
+        <div class="hra-hero-bottom">
+          <p>Vyber si charakter a vyzkoušej, jak dobře poznáš pražské mimoúrovňové křižovatky. Žádné účty, žádné žebříčky.</p>
+        </div>
+      </section>
+
+      <div class="char-grid">
+        <button class="char-card" data-char="typolog">
+          <div>
+            <div class="char-num">01 / 03</div>
+          </div>
+          <div>
+            <h2 class="char-name">Typolog</h2>
+            <p class="char-desc" style="margin-top: 14px;">Z ortofotomapy a poté ze schématu poznáš, o jaký typ křižovatky jde.</p>
+          </div>
+          <div class="char-meta">20 otázek · 2 fáze</div>
+          <svg class="char-arrow" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 24 L 24 8 M 12 8 L 24 8 L 24 20"/></svg>
+        </button>
+        <button class="char-card disabled" data-char="geograf">
+          <div>
+            <div class="char-num">02 / 03</div>
+            <div class="char-soon-badge">Připravujeme</div>
+          </div>
+          <div>
+            <h2 class="char-name">Geograf</h2>
+            <p class="char-desc" style="margin-top: 14px;">Najdi křižovatku na mapě Prahy. Body podle přesnosti.</p>
+          </div>
+          <div class="char-meta">brzy</div>
+        </button>
+        <button class="char-card disabled" data-char="detektiv">
+          <div>
+            <div class="char-num">03 / 03</div>
+            <div class="char-soon-badge">Připravujeme</div>
+          </div>
+          <div>
+            <h2 class="char-name">Detektiv</h2>
+            <p class="char-desc" style="margin-top: 14px;">Odhadni dobu výstavby z ortofotomapy. Čtyři časová období.</p>
+          </div>
+          <div class="char-meta">brzy</div>
+        </button>
+      </div>`;
+    app.querySelectorAll(".char-card[data-char]").forEach(c => {
+      if (c.classList.contains("disabled")) return;
+      c.addEventListener("click", () => startTypolog());
+    });
+  }
+
+  function startTypolog() {
+    const validTypes = new Set(typologie.map(t => t.slug));
+    const pool = krizovatky.filter(k => k.typ_slug && validTypes.has(k.typ_slug));
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    // Phase 1: ortofoto → schema cards (10 questions)
+    // Phase 2: schema → text names (10 questions)
+    const ph1Pool = shuffled.slice(0, Math.min(PHASE_BREAK, shuffled.length));
+    const ph2Pool = shuffled.slice(PHASE_BREAK, PHASE_BREAK + PHASE_BREAK);
+    // If fewer than 20 valid crossroads, reuse from start
+    while (ph2Pool.length < PHASE_BREAK && shuffled.length > 0) {
+      ph2Pool.push(shuffled[ph2Pool.length % shuffled.length]);
+    }
+    const questions = [
+      ...ph1Pool.map(k => ({ ...buildQuestion(k), phase: 1 })),
+      ...ph2Pool.slice(0, PHASE_BREAK).map(k => ({ ...buildQuestion(k), phase: 2 })),
+    ];
+    const state = { questions, idx: 0, score: 0, maxStreak: 0, streak: 0, results: [], currentAnswered: false };
+    renderQuestion(state);
+  }
+
+  function buildQuestion(k) {
+    const correct = k.typ_slug;
+    const correctType = typologie.find(t => t.slug === correct);
+    const pool = typologie.filter(t => t.slug !== correct);
+    const distractors = pool.sort(() => Math.random() - 0.5).slice(0, 3);
+    const options = [correctType, ...distractors].sort(() => Math.random() - 0.5);
+    return { krizovatka: k, correctSlug: correct, options };
+  }
+
+  function renderQuestion(state) {
+    document.body.classList.add("in-game");
+    const q = state.questions[state.idx];
+    const total = state.questions.length;
+    const progressHtml = state.questions.map((_, i) => {
+      let cls = "progress-dot";
+      if (i < state.results.length) cls += state.results[i].correct ? " done" : " wrong";
+      else if (i === state.idx) cls += " current";
+      return `<div class="${cls}"></div>`;
+    }).join("");
+
+    const phaseTag = q.phase === 1 ? "Fáze 01 · Ortofoto → Schéma" : "Fáze 02 · Schéma → Název";
+
+    const imgSrc = q.phase === 1
+      ? AppData.ortofotoPath(q.krizovatka.tsk, q.krizovatka.rok_ortofoto_novy)
+      : AppData.schemaPath(q.krizovatka.tsk);
+    const imgClass = q.phase === 1 ? "cover" : "phase2";
+
+    const answersHtml = q.phase === 1
+      ? `<div class="answers-grid">${q.options.map(opt => `
+          <button class="answer" data-slug="${opt.slug}">
+            <div class="answer-img-wrap"><img src="${AppData.typologyPath(opt.slug)}" alt="" loading="lazy"></div>
+            <div class="answer-name">${opt.nazev}</div>
+          </button>`).join("")}</div>`
+      : `<div class="answers-list">${q.options.map((opt, i) => `
+          <button class="answer-text" data-slug="${opt.slug}">
+            <span>${opt.nazev}</span>
+            <span class="answer-text-letter">${String.fromCharCode(65+i)}</span>
+          </button>`).join("")}</div>`;
+
+    app.innerHTML = `
+      <div class="game-frame">
+        <div class="game-topbar">
+          <div class="game-progress">${progressHtml}</div>
+          <div class="phase-tag">${phaseTag}</div>
+          <div class="game-stats">
+            <span><strong>${state.idx+1}</strong>/ ${total}</span>
+            <span><strong>${state.score}</strong>XP</span>
+            <span><strong>${state.streak}</strong>Streak</span>
+          </div>
+        </div>
+        <div class="game-body">
+          <div class="game-question-img ${imgClass}">
+            <img src="${imgSrc}" alt="" loading="eager">
+          </div>
+          <div class="game-question-side">
+            ${answersHtml}
+          </div>
+        </div>
+        <div id="feedback-slot"></div>
+      </div>`;
+
+    const answerSel = q.phase === 1 ? ".answer" : ".answer-text";
+    app.querySelectorAll(answerSel).forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (state.currentAnswered) return;
+        state.currentAnswered = true;
+        const picked = btn.dataset.slug;
+        const correct = picked === q.correctSlug;
+        app.querySelectorAll(answerSel).forEach(b => {
+          b.disabled = true;
+          if (b.dataset.slug === q.correctSlug) b.classList.add("correct");
+          else if (b === btn) b.classList.add("wrong");
+        });
+        state.results.push({ correct });
+        if (correct) { state.score += 1; state.streak += 1; state.maxStreak = Math.max(state.maxStreak, state.streak); }
+        else { state.streak = 0; }
+        document.querySelector(".game-frame")?.classList.add("answered");
+        const correctOpt = q.options.find(o => o.slug === q.correctSlug);
+        const fbText = correct
+          ? `<strong>Správně.</strong> ${q.krizovatka.ulice} je <strong>${correctOpt.nazev}</strong>.`
+          : `<strong>Vedle.</strong> Správně je <strong>${correctOpt.nazev}</strong> — ${q.krizovatka.ulice}.`;
+        document.getElementById("feedback-slot").innerHTML = `
+          <div class="feedback-bar ${correct ? 'correct' : 'wrong'}">
+            <div class="feedback-text">${fbText}</div>
+            <button class="btn-next" id="next-btn">
+              ${state.idx + 1 < total ? "Další otázka" : "Shrnutí"}
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L 13 8 M 9 4 L 13 8 L 9 12"/></svg>
+            </button>
+          </div>`;
+        document.getElementById("next-btn").addEventListener("click", () => {
+          state.currentAnswered = false;
+          if (state.idx + 1 < total) { state.idx += 1; renderQuestion(state); }
+          else { renderResult(state); }
+        });
+      });
+    });
+  }
+
+  const TRASH_LINES = [
+    "Asi jsi přejel*a exit… Všechny exity.",
+    "Mimoúrovňové… a ty jsi úplně mimo.",
+    "Pražský okruh tě nevpustí ani pro tranzit.",
+    "Trojlístek, čtyřlístek? Ty jsi spíš plevel.",
+    "Mimoúrovňové? Jediný*á mimoúrovňový*á jsi tu ty.",
+    "Mimo, mimo, mimo. A pak ještě jednou mimo.",
+    "Naprostá mimoúrovňová tragédie.",
+    "Mimoúrovňový*á jsi jen v jednom — že jsi naprosto mimo.",
+    "Tos byl*a tak mimo, že tě ani GPS neviděla.",
+    "Pražská D1 si oddychla, že tudy nejedeš.",
+    "Z tebe by se na fakultě dopravní smáli ještě měsíce.",
+    "Tos netrefil*a tak, že musíš být z Brna.",
+    "Tos rozsekal*a typologii jak magistrála Vinohrady.",
+    "Bezpečnost provozu doporučuje, aby ses sem už nevracel*a.",
+    "Levej sjezd nebo pravej sjezd? Ty hlavně nejezdi.",
+    "Tohle bylo naprosto mimo úroveň. Znova!",
+    "Tos zahnul*a teda úplně mimo."
+  ];
+  const WIN_LINES = [
+    "Tos projel*a jak po vlastním dvorku.",
+    "Čistá stopa, ani jeden smyk.",
+    "Pražák ve špičce by ti záviděl.",
+    "Tady už je jen jedna úroveň. Ta tvoje."
+  ];
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function renderResult(state) {
+    document.body.classList.remove("in-game");
+    const total = state.questions.length;
+    const score = state.score;
+    const pct = score / total;
+    const isWin = pct >= 0.8;
+    const line = isWin ? pick(WIN_LINES) : pick(TRASH_LINES);
+
+    app.innerHTML = `
+      <section class="result">
+        <div class="result-top">
+          <div class="result-meta">Shrnutí · Typolog</div>
+          <div class="result-meta">${score} / ${total}</div>
+        </div>
+        <div>
+          <p class="result-line-big">${line}</p>
+        </div>
+        <div>
+          <div class="result-stats">
+            <div class="result-stat">
+              <div class="result-stat-label">XP získáno</div>
+              <div class="result-stat-num">${score}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">Nejdelší streak</div>
+              <div class="result-stat-num">${state.maxStreak}</div>
+            </div>
+          </div>
+          <div class="result-ctas">
+            <button class="btn-result" id="play-again">
+              Hrát znovu
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L 13 8 M 9 4 L 13 8 L 9 12"/></svg>
+            </button>
+            <button class="btn-result outline" id="other-char">Vybrat jiný charakter</button>
+          </div>
+        </div>
+      </section>`;
+    document.getElementById("play-again").addEventListener("click", startTypolog);
+    document.getElementById("other-char").addEventListener("click", screenCharSelect);
+  }
+
+  screenCharSelect();
+})();
+</script>
+</body>
+</html>

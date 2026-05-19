@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plánované · pražské mimoúrovňové křižovatky</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    :root { --blue: #1E3D7C; --blue-light: #6E89B8; --blue-tint: rgba(30,61,124,0.08); }
+    body[data-page="planovane"] main { padding: 0; max-width: none; }
+    body[data-page="planovane"] .nav { border-radius: 0; }
+    .page-planovane * { border-radius: 0 !important; }
+    .page-planovane { color: var(--blue); }
+
+    .p-hero {
+      background: var(--blue); color: white;
+      padding: clamp(80px, 12vh, 130px) clamp(24px, 6vw, 80px) clamp(28px, 4vh, 48px);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .p-hero-top { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; margin-bottom: clamp(24px, 5vh, 56px); }
+    .p-hero-meta { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+    .p-hero h1 { color: white; font-size: clamp(40px, 8vw, 130px); font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; text-transform: uppercase; margin: 0; }
+    .p-hero-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; margin-top: clamp(20px, 4vh, 40px); }
+    .p-hero p { color: rgba(255,255,255,0.85); font-size: clamp(14px, 1.3vw, 17px); max-width: 540px; line-height: 1.5; margin: 0; }
+
+    .plans-list { border-bottom: 1px solid var(--blue); }
+    .plan-item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: clamp(20px, 4vw, 48px);
+      align-items: center;
+      padding: clamp(32px, 5vh, 56px) clamp(24px, 6vw, 80px);
+      border-bottom: 1px solid var(--blue);
+      color: var(--blue);
+      background: white;
+      transition: background 0.2s;
+    }
+    .plan-item:last-child { border-bottom: none; }
+    .plan-item:hover { background: var(--blue-tint); }
+    .plan-num { font-size: clamp(20px, 2vw, 28px); font-weight: 500; letter-spacing: 0.15em; opacity: 0.55; font-variant-numeric: tabular-nums; }
+    .plan-name { font-size: clamp(22px, 3vw, 44px); font-weight: 800; letter-spacing: -0.025em; text-transform: uppercase; line-height: 1; margin: 0; }
+    .plan-meta { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); }
+    .plan-tag {
+      padding: 5px 12px;
+      border: 1px solid var(--blue);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--blue);
+    }
+    .plan-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+
+    .placeholder-section {
+      padding: clamp(80px, 12vh, 160px) clamp(24px, 6vw, 80px);
+      text-align: center;
+      background: var(--blue);
+      color: white;
+    }
+    .placeholder-section h2 { font-size: clamp(28px, 4vw, 56px); font-weight: 800; letter-spacing: -0.03em; text-transform: uppercase; margin: 0 0 24px; line-height: 0.95; }
+    .placeholder-section p { font-size: clamp(14px, 1.3vw, 17px); max-width: 540px; margin: 0 auto; line-height: 1.6; color: rgba(255,255,255,0.85); }
+    .placeholder-tag {
+      display: inline-block;
+      padding: 6px 14px;
+      border: 1px solid white;
+      color: white;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body data-page="planovane" class="page-planovane">
+
+<div id="nav"></div>
+
+<main>
+  <section class="p-hero">
+    <div class="p-hero-top">
+      <div class="p-hero-meta">Plánované · výhled</div>
+      <div class="p-hero-meta">IPR · TSK · ÚP</div>
+    </div>
+    <h1>Plánované</h1>
+    <div class="p-hero-bottom">
+      <p>Mimoúrovňové křižovatky ve výhledu pražské dopravní sítě — z platných územních plánů, koncepce IPR a studií TSK.</p>
+    </div>
+  </section>
+
+  <div class="plans-list">
+    <article class="plan-item">
+      <div class="plan-num">01</div>
+      <h3 class="plan-name">Pražský okruh — východní část</h3>
+      <div class="plan-right">
+        <span class="plan-tag">Studie</span>
+        <span class="plan-meta">SOKP 511</span>
+      </div>
+    </article>
+    <article class="plan-item">
+      <div class="plan-num">02</div>
+      <h3 class="plan-name">Radlická radiála</h3>
+      <div class="plan-right">
+        <span class="plan-tag">Studie</span>
+        <span class="plan-meta">R 4</span>
+      </div>
+    </article>
+    <article class="plan-item">
+      <div class="plan-num">03</div>
+      <h3 class="plan-name">Vestec — Jesenice</h3>
+      <div class="plan-right">
+        <span class="plan-tag">Koncepce</span>
+        <span class="plan-meta">jihovýchod</span>
+      </div>
+    </article>
+  </div>
+
+  <section class="placeholder-section">
+    <div class="placeholder-tag">Připravujeme</div>
+    <h2>Mapový výhled</h2>
+    <p>Detailní zákres plánovaných křižovatek včetně dokumentace, výhledových intenzit a vazeb na okolní síť doplníme v další fázi.</p>
+  </section>
+</main>
+
+<script src="js/nav.js"></script>
+</body>
+</html>

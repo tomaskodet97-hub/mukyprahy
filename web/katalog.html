@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Katalog · pražské mimoúrovňové křižovatky</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" crossorigin=""/>
+  <style>
+    :root {
+      --blue: #1E3D7C;
+      --blue-light: #6E89B8;
+      --blue-tint: rgba(30,61,124,0.08);
+    }
+    body[data-page="katalog"] main { padding: 0; max-width: none; }
+    body[data-page="katalog"] .nav { border-radius: 0; }
+    .page-katalog * { border-radius: 0 !important; }
+    .page-katalog { color: var(--blue); }
+    /* Leaflet exception — keep their default round controls/markers */
+    .page-katalog .leaflet-control,
+    .page-katalog .leaflet-control * { border-radius: 0 !important; }
+
+    /* HERO */
+    .katalog-hero {
+      background: var(--blue);
+      color: white;
+      padding: clamp(80px, 12vh, 130px) clamp(24px, 6vw, 80px) clamp(28px, 4vh, 48px);
+      display: flex; flex-direction: column; justify-content: space-between;
+    }
+    .katalog-hero-top { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; margin-bottom: clamp(24px, 5vh, 56px); }
+    .katalog-hero-meta { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+    .katalog-hero h1 { color: white; font-size: clamp(40px, 8vw, 130px); font-weight: 800; line-height: 0.9; letter-spacing: -0.04em; text-transform: uppercase; margin: 0; }
+    .katalog-hero-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; margin-top: clamp(20px, 4vh, 40px); }
+    .katalog-hero p { color: rgba(255,255,255,0.85); font-size: clamp(14px, 1.3vw, 17px); max-width: 540px; line-height: 1.5; margin: 0; }
+
+    /* FILTER STRIP */
+    .katalog-filters {
+      background: white;
+      border-bottom: 1px solid var(--blue);
+      padding: 18px clamp(24px, 6vw, 80px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .filters-label { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); margin-right: 8px; }
+    .search-input {
+      flex: 1; min-width: 200px;
+      padding: 9px 14px;
+      background: white;
+      border: 1px solid var(--blue);
+      color: var(--blue);
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--blue-light); }
+    .select {
+      padding: 9px 14px;
+      background: white;
+      border: 1px solid var(--blue);
+      color: var(--blue);
+      font-size: 12px;
+      font-family: inherit;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .count-pill {
+      margin-left: auto;
+      padding: 8px 14px;
+      background: var(--blue);
+      color: white;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* SPLIT LAYOUT */
+    .katalog-split {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      min-height: calc(100vh - 60px);
+    }
+    @media (max-width: 1000px) { .katalog-split { grid-template-columns: 1fr; } }
+
+    .katalog-cards {
+      border-right: 1px solid var(--blue);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      align-content: start;
+    }
+    @media (max-width: 1200px) { .katalog-cards { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 1000px) { .katalog-cards { border-right: none; border-bottom: 1px solid var(--blue); grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 700px)  { .katalog-cards { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px)  { .katalog-cards { grid-template-columns: 1fr; } }
+
+    .k-card {
+      position: relative;
+      background: white;
+      border: none;
+      border-right: 1px solid var(--blue);
+      border-bottom: 1px solid var(--blue);
+      padding: 0;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      color: var(--blue);
+      transition: background 0.2s;
+    }
+    .k-card:hover, .k-card.highlighted { background: var(--blue-tint); }
+    .k-card.highlighted { background: var(--blue-tint); outline: 2px solid var(--blue); outline-offset: -2px; }
+    .k-card-img {
+      aspect-ratio: 1;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6%;
+      border-bottom: 1px solid var(--blue);
+      transition: transform 0.3s;
+    }
+    .k-card-img img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+    .k-card-body { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 6px; }
+    .k-card-tsk { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue-light); }
+    .k-card-title { font-size: clamp(12px, 1.05vw, 14px); font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; }
+    .k-card-meta { font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue-light); margin-top: 2px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .k-card-meta span { white-space: nowrap; }
+
+    /* MAP — sticky */
+    .katalog-map {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      max-height: 100vh;
+      background: var(--blue-tint);
+    }
+    @media (max-width: 1000px) { .katalog-map { position: static; height: 70vh; } }
+    #map { width: 100%; height: 100%; }
+    .map-marker { width: 14px; height: 14px; background: var(--blue); border: 2px solid white; border-radius: 50% !important; box-shadow: 0 1px 3px rgba(0,0,0,0.3); cursor: pointer; transition: transform 0.15s; }
+    .map-marker:hover { transform: scale(1.4); }
+    .map-marker.highlighted { width: 22px; height: 22px; box-shadow: 0 2px 10px rgba(30,61,124,0.5); transform: scale(1.1); }
+
+    /* MODAL */
+    .modal-bg { position: fixed; inset: 0; background: rgba(20, 35, 70, 0.6); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 0; }
+    .modal-bg.open { display: flex; }
+    .modal { background: white; max-width: 1200px; width: 100%; max-height: 100vh; height: 100%; overflow-y: auto; position: relative; color: var(--blue); }
+    .modal-close { position: absolute; top: 24px; right: 24px; width: 44px; height: 44px; background: white; border: 1px solid var(--blue); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1; color: var(--blue); font-size: 20px; }
+    .modal-close:hover { background: var(--blue); color: white; }
+    .modal-header { padding: clamp(40px, 6vw, 64px) clamp(32px, 5vw, 64px) clamp(24px, 3vh, 32px); border-bottom: 1px solid var(--blue); }
+    .modal-header .tag { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); margin-bottom: 14px; }
+    .modal-header h2 { color: var(--blue); font-size: clamp(32px, 4vw, 56px); font-weight: 800; letter-spacing: -0.03em; text-transform: uppercase; line-height: 0.95; margin: 0; }
+    .modal-header .sub { font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--blue-light); margin-top: 16px; }
+    .modal-imgs { display: grid; grid-template-columns: 1fr 1fr 1fr; border-bottom: 1px solid var(--blue); }
+    .modal-img-cell {
+      aspect-ratio: 1;
+      border-right: 1px solid var(--blue);
+      display: flex; flex-direction: column;
+      padding: 24px;
+      background: white;
+      position: relative;
+    }
+    .modal-img-cell:last-child { border-right: none; }
+    .modal-img-cell .label { font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); margin-bottom: 12px; }
+    .modal-img-cell .img-area { flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; }
+    .modal-img-cell img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+    .modal-info { padding: clamp(32px, 4vw, 56px); }
+    .info-table { display: grid; grid-template-columns: 220px 1fr; gap: 0; }
+    .info-table dt { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); padding: 16px 0; border-bottom: 1px solid var(--blue-tint); }
+    .info-table dd { font-size: 15px; color: var(--blue); padding: 16px 0; border-bottom: 1px solid var(--blue-tint); margin: 0; }
+    .info-table dt:last-of-type, .info-table dd:last-of-type { border-bottom: none; }
+    @media (max-width: 700px) {
+      .modal-imgs { grid-template-columns: 1fr; }
+      .modal-img-cell { border-right: none; border-bottom: 1px solid var(--blue); }
+      .info-table { grid-template-columns: 1fr; }
+      .info-table dt { padding-bottom: 4px; border-bottom: none; }
+    }
+  </style>
+</head>
+<body data-page="katalog" class="page-katalog">
+
+<div id="nav"></div>
+
+<main>
+  <section class="katalog-hero">
+    <div class="katalog-hero-top">
+      <div class="katalog-hero-meta">Katalog · 47 křižovatek</div>
+      <div class="katalog-hero-meta">Mapa & karty</div>
+    </div>
+    <h1>Katalog</h1>
+    <div class="katalog-hero-bottom">
+      <p>Všech 47 pražských mimoúrovňových křižovatek. Najdi podle ulice, typu nebo doby výstavby a klikni pro detail s ortofotomapami a parametry.</p>
+    </div>
+  </section>
+
+  <div class="katalog-filters">
+    <span class="filters-label">Hledej</span>
+    <input type="search" class="search-input" id="search" placeholder="Ulice...">
+    <select class="select" id="filter-typ"><option value="">Všechny typy</option></select>
+    <select class="select" id="filter-doba"><option value="">Všechny doby</option></select>
+    <span class="count-pill" id="count">0 / 0</span>
+  </div>
+
+  <div class="katalog-split">
+    <div class="katalog-cards" id="grid"></div>
+    <div class="katalog-map"><div id="map"></div></div>
+  </div>
+</main>
+
+<div class="modal-bg" id="modal-bg"><div class="modal" id="modal"></div></div>
+
+<script src="js/nav.js"></script>
+<script src="js/data-bundle.js"></script>
+<script src="js/data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" crossorigin=""></script>
+<script>
+(async () => {
+  const krizovatky = await AppData.loadKrizovatky();
+  const typologie = await AppData.loadTypologie();
+  const typoBySlug = Object.fromEntries(typologie.map(t => [t.slug, t]));
+  const grid = document.getElementById("grid");
+  const countEl = document.getElementById("count");
+  const filterTyp = document.getElementById("filter-typ");
+  const filterDoba = document.getElementById("filter-doba");
+  const search = document.getElementById("search");
+
+  const allTypy = [...new Set(krizovatky.map(k => k.typ))].sort((a,b)=>a.localeCompare(b,"cs"));
+  allTypy.forEach(t => { filterTyp.innerHTML += `<option value="${t}">${t}</option>`; });
+  const dobyOrder = ["70. léta","80. léta","90. léta","po roce 2000","2005"];
+  const allDoby = [...new Set(krizovatky.map(k => k.doba_vystavby))].sort((a,b) => dobyOrder.indexOf(a) - dobyOrder.indexOf(b));
+  allDoby.forEach(d => { filterDoba.innerHTML += `<option value="${d}">${d}</option>`; });
+
+  const map = L.map("map", { zoomControl: true, scrollWheelZoom: true }).setView([50.075, 14.45], 11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: "© OpenStreetMap", maxZoom: 19 }).addTo(map);
+
+  const markers = {};
+  let lastHighlighted = null;
+  krizovatky.forEach(k => {
+    if (k.lat == null) return;
+    const icon = L.divIcon({
+      className: "leaflet-div-icon-wrap",
+      html: `<div class="map-marker" data-tsk="${k.tsk}"></div>`,
+      iconSize: [14, 14], iconAnchor: [7, 7],
+    });
+    const m = L.marker([k.lat, k.lon], { icon }).addTo(map);
+    m.on("click", () => scrollToCard(k.tsk));
+    m.on("mouseover", () => highlightCard(k.tsk, true));
+    m.on("mouseout", () => highlightCard(k.tsk, false));
+    markers[k.tsk] = m;
+  });
+
+  function scrollToCard(tsk) {
+    const card = grid.querySelector(`.k-card[data-tsk="${tsk}"]`);
+    if (!card) return;
+    // remove previous persistent highlight
+    if (lastHighlighted) lastHighlighted.classList.remove("highlighted");
+    card.classList.add("highlighted");
+    lastHighlighted = card;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  let activeList = krizovatky;
+
+  function applyFilters() {
+    const q = search.value.trim().toLowerCase();
+    const ft = filterTyp.value;
+    const fd = filterDoba.value;
+    activeList = krizovatky.filter(k => {
+      if (q && !k.ulice.toLowerCase().includes(q)) return false;
+      if (ft && k.typ !== ft) return false;
+      if (fd && k.doba_vystavby !== fd) return false;
+      return true;
+    });
+    renderGrid();
+    const activeSet = new Set(activeList.map(k => k.tsk));
+    Object.entries(markers).forEach(([tsk, m]) => {
+      if (activeSet.has(tsk)) { if (!map.hasLayer(m)) m.addTo(map); }
+      else { if (map.hasLayer(m)) map.removeLayer(m); }
+    });
+  }
+
+  function renderGrid() {
+    countEl.textContent = `${String(activeList.length).padStart(2,"0")} / ${String(krizovatky.length).padStart(2,"0")}`;
+    grid.innerHTML = activeList.map((k, i) => `
+      <button class="k-card" data-tsk="${k.tsk}">
+        <div class="k-card-img"><img src="${AppData.schemaPath(k.tsk)}" alt="" loading="lazy"></div>
+        <div class="k-card-body">
+          <div class="k-card-tsk">${String(i+1).padStart(2,"0")} · TSK ${k.tsk}</div>
+          <div class="k-card-title">${k.ulice}</div>
+          <div class="k-card-meta">
+            <span>${k.typ}</span><span>·</span><span>${k.doba_vystavby}</span>
+          </div>
+        </div>
+      </button>`).join("");
+    grid.querySelectorAll(".k-card").forEach(c => {
+      const tsk = c.dataset.tsk;
+      c.addEventListener("click", () => openModal(tsk));
+      c.addEventListener("mouseenter", () => highlightMarker(tsk, true));
+      c.addEventListener("mouseleave", () => highlightMarker(tsk, false));
+    });
+  }
+
+  function highlightMarker(tsk, on) {
+    const m = markers[tsk]; if (!m) return;
+    const el = m.getElement()?.querySelector(".map-marker");
+    if (el) el.classList.toggle("highlighted", on);
+  }
+  function highlightCard(tsk, on) {
+    const card = grid.querySelector(`.k-card[data-tsk="${tsk}"]`);
+    if (!card) return;
+    card.classList.toggle("highlighted", on);
+    if (on) card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  const modalBg = document.getElementById("modal-bg");
+  const modal = document.getElementById("modal");
+
+  function openModal(tsk) {
+    const k = krizovatky.find(x => x.tsk === tsk);
+    if (!k) return;
+    const t = typoBySlug[k.typ_slug];
+    modal.innerHTML = `
+      <button class="modal-close" aria-label="Zavřít">×</button>
+      <div class="modal-header">
+        <div class="tag">TSK ${k.tsk} · ${k.typ}</div>
+        <h2>${k.ulice}</h2>
+        <div class="sub">${k.doba_vystavby}${t ? ' · ' + t.kategorie : ''}</div>
+      </div>
+      <div class="modal-imgs">
+        <div class="modal-img-cell"><div class="label">Schéma</div><div class="img-area"><img src="${AppData.schemaPath(k.tsk)}" alt=""></div></div>
+        <div class="modal-img-cell"><div class="label">Ortofoto ${k.rok_ortofoto_stary}</div><div class="img-area"><img src="${AppData.ortofotoPath(k.tsk, k.rok_ortofoto_stary)}" alt=""></div></div>
+        <div class="modal-img-cell"><div class="label">Ortofoto ${k.rok_ortofoto_novy}</div><div class="img-area"><img src="${AppData.ortofotoPath(k.tsk, k.rok_ortofoto_novy)}" alt=""></div></div>
+      </div>
+      <div class="modal-info">
+        <dl class="info-table">
+          <dt>TSK číslo</dt><dd>${k.tsk}</dd>
+          <dt>Ulice</dt><dd>${k.ulice}</dd>
+          <dt>Typ křižovatky</dt><dd>${k.typ}</dd>
+          <dt>Doba výstavby</dt><dd>${k.doba_vystavby}</dd>
+          <dt>Intenzita 2020</dt><dd>${k.intenzita_2020}</dd>
+          <dt>Souřadnice</dt><dd>${k.lat?.toFixed(5)}, ${k.lon?.toFixed(5)}</dd>
+        </dl>
+      </div>`;
+    modalBg.classList.add("open");
+    modal.querySelector(".modal-close").addEventListener("click", closeModal);
+  }
+  function closeModal() { modalBg.classList.remove("open"); }
+  modalBg.addEventListener("click", (e) => { if (e.target === modalBg) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+  search.addEventListener("input", applyFilters);
+  filterTyp.addEventListener("change", applyFilters);
+  filterDoba.addEventListener("change", applyFilters);
+  applyFilters();
+})();
+</script>
+</body>
+</html>
