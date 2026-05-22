@@ -13,6 +13,7 @@
     .page-historie * { border-radius: 0 !important; }
     .page-historie { color: var(--blue); }
 
+    /* HERO */
     .h-hero {
       background: var(--blue); color: white;
       padding: clamp(80px, 12vh, 130px) clamp(24px, 6vw, 80px) clamp(28px, 4vh, 48px);
@@ -24,55 +25,154 @@
     .h-hero-bottom { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; margin-top: clamp(20px, 4vh, 40px); }
     .h-hero p { color: rgba(255,255,255,0.85); font-size: clamp(14px, 1.3vw, 17px); max-width: 540px; line-height: 1.5; margin: 0; }
 
-    .timeline-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
+    /* CHAPTERS */
+    .chapter-divider {
+      border-top: 1px solid var(--blue);
+      padding: clamp(48px, 7vh, 96px) clamp(24px, 6vw, 80px) clamp(20px, 3vh, 32px);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    .chapter-num { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--blue-light); }
+    .chapter-title { font-size: clamp(40px, 7vw, 110px); font-weight: 800; letter-spacing: -0.04em; text-transform: uppercase; line-height: 0.9; margin: 0; color: var(--blue); }
+
+    .article {
+      padding: 0 clamp(24px, 6vw, 80px) clamp(48px, 7vh, 96px);
+      max-width: 1280px;
+    }
+    .article-section { margin-bottom: clamp(40px, 6vh, 72px); }
+    .section-label { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); margin-bottom: 12px; }
+    .section-title { font-size: clamp(22px, 2.2vw, 32px); font-weight: 800; letter-spacing: -0.02em; text-transform: uppercase; line-height: 1.05; margin: 0 0 24px; color: var(--blue); }
+    .article p {
+      font-size: clamp(14px, 1.15vw, 16px);
+      line-height: 1.65;
+      color: var(--blue);
+      max-width: 68ch;
+      margin: 0 0 16px;
+      text-align: justify;
+      hyphens: auto;
+      -webkit-hyphens: auto;
+    }
+    .article p:last-child { margin-bottom: 0; }
+    .ref-sup { font-size: 0.7em; vertical-align: super; color: var(--blue-light); font-weight: 700; padding: 0 1px; }
+
+    /* HIGHLIGHT BLOCK — light blue subsection wrapper */
+    .highlight-block {
+      background: var(--blue-tint);
+      padding: clamp(40px, 6vh, 80px) clamp(24px, 6vw, 80px);
+      margin: 0;
+      border-top: 1px solid var(--blue);
       border-bottom: 1px solid var(--blue);
     }
-    @media (max-width: 900px) { .timeline-grid { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 480px) { .timeline-grid { grid-template-columns: 1fr; } }
+    .highlight-block + .highlight-block { border-top: none; }
+    .highlight-block .article-section,
+    .highlight-block .article-split {
+      max-width: 1280px;
+      margin-left: auto;
+      margin-right: auto;
+      margin-bottom: 0;
+    }
+    .highlight-block + .article,
+    .article + .highlight-block { margin-top: 0; }
 
-    .decade-card {
-      padding: clamp(32px, 4vw, 56px);
-      border-right: 1px solid var(--blue);
-      aspect-ratio: 1;
+    /* SPLIT — text + image, image right next to text */
+    .article-split {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: clamp(32px, 5vw, 80px);
+      align-items: start;
+      margin-bottom: clamp(40px, 6vh, 72px);
+    }
+    @media (max-width: 900px) { .article-split { grid-template-columns: 1fr; gap: clamp(20px, 3vh, 32px); } }
+    .article-split.flip > .figure { order: -1; }
+    @media (max-width: 900px) { .article-split.flip > .figure { order: 0; } }
+
+    /* FIGURE — borderless, image hugs text */
+    .figure {
+      margin: 0;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      color: var(--blue);
-      background: white;
     }
-    .decade-card:last-child { border-right: none; }
-    @media (max-width: 900px) {
-      .decade-card { aspect-ratio: auto; min-height: 40vh; border-right: none; border-bottom: 1px solid var(--blue); }
-      .decade-card:nth-child(2n) { border-right: none; }
-      .decade-card:nth-child(2n-1) { border-right: 1px solid var(--blue); }
+    .figure-img-wrap {
+      background: transparent;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
     }
-    @media (max-width: 480px) {
-      .decade-card { border-right: none !important; }
-    }
-    .decade-num { font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--blue-light); }
-    .decade-label { font-size: clamp(32px, 4vw, 56px); font-weight: 800; letter-spacing: -0.03em; text-transform: uppercase; line-height: 0.95; margin: 0; }
-    .decade-count { font-size: clamp(48px, 7vw, 96px); font-weight: 800; line-height: 0.9; color: var(--blue); letter-spacing: -0.04em; }
-    .decade-count-label { font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--blue-light); margin-top: 4px; }
-
-    .placeholder-section {
-      padding: clamp(80px, 12vh, 160px) clamp(24px, 6vw, 80px);
-      text-align: center;
-      border-bottom: 1px solid var(--blue);
-    }
-    .placeholder-section h2 { font-size: clamp(28px, 4vw, 56px); font-weight: 800; letter-spacing: -0.03em; text-transform: uppercase; color: var(--blue); margin: 0 0 24px; line-height: 0.95; }
-    .placeholder-section p { font-size: clamp(14px, 1.3vw, 17px); max-width: 540px; margin: 0 auto; line-height: 1.6; color: var(--blue-light); }
-    .placeholder-tag {
-      display: inline-block;
-      padding: 6px 14px;
-      border: 1px solid var(--blue);
-      color: var(--blue);
+    .figure-img-wrap img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    .figure-img-wrap.cover img { object-fit: cover; }
+    .figure-img-wrap.tall { aspect-ratio: 3 / 4; }
+    .figure-caption {
       font-size: 11px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      margin-bottom: 24px;
+      letter-spacing: 0.04em;
+      color: var(--blue-light);
+      padding-top: 10px;
+      line-height: 1.5;
+      border-top: none;
+      margin-top: 0;
+      max-width: 60ch;
     }
+    .figure-caption strong { color: var(--blue); font-weight: 700; }
+
+    /* FIGURE GRID — multiple side by side */
+    .figure-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: clamp(20px, 3vw, 40px);
+      margin: clamp(32px, 5vh, 56px) 0 0;
+    }
+    @media (max-width: 900px) { .figure-grid { grid-template-columns: 1fr; } }
+    /* Tall variant — for patent drawings (portrait orientation) */
+    .figure-grid-tall .figure-img-wrap { aspect-ratio: 3 / 4; }
+
+    /* SOURCES */
+    .sources {
+      border-top: 1px solid var(--blue);
+      padding: clamp(32px, 5vh, 48px) clamp(24px, 6vw, 80px);
+      background: var(--blue-tint);
+    }
+    .sources h3 {
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin: 0 0 16px;
+      font-weight: 600;
+    }
+    .sources ol {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      counter-reset: src;
+    }
+    .sources li {
+      font-size: 11px;
+      line-height: 1.6;
+      color: var(--blue-light);
+      padding: 4px 0 4px 28px;
+      position: relative;
+      counter-increment: src;
+      max-width: 90ch;
+    }
+    .sources li::before {
+      content: "[" counter(src) "]";
+      position: absolute;
+      left: 0;
+      color: var(--blue);
+      font-weight: 700;
+    }
+    .sources a {
+      color: var(--blue-light);
+      text-decoration: underline;
+      text-decoration-color: var(--blue-tint);
+      word-break: break-all;
+    }
+    .sources a:hover { color: var(--blue); text-decoration-color: var(--blue); }
   </style>
 </head>
 <body data-page="historie" class="page-historie">
@@ -82,54 +182,178 @@
 <main>
   <section class="h-hero">
     <div class="h-hero-top">
-      <div class="h-hero-meta">Historie · časová osa</div>
-      <div class="h-hero-meta">60+ let výstavby</div>
+      <div class="h-hero-meta">Historie · od patentu k pražské síti</div>
+      <div class="h-hero-meta">1915 → dnes</div>
     </div>
     <h1>Historie</h1>
     <div class="h-hero-bottom">
-      <p>Vývoj pražských mimoúrovňových křižovatek od prvních staveb v 60. letech až po současné rekonstrukce.</p>
+      <p>Od prvního patentu v New Jersey, přes Stockholm a Kamener Kreuz, až po pražský okruh — sto let mimoúrovňových křižovatek.</p>
     </div>
   </section>
 
-  <div class="timeline-grid">
-    <div class="decade-card">
-      <div class="decade-num">01 / 04</div>
-      <h2 class="decade-label">70. léta</h2>
-      <div>
-        <div class="decade-count">22</div>
-        <div class="decade-count-label">křižovatek</div>
-      </div>
-    </div>
-    <div class="decade-card">
-      <div class="decade-num">02 / 04</div>
-      <h2 class="decade-label">80. léta</h2>
-      <div>
-        <div class="decade-count">02</div>
-        <div class="decade-count-label">křižovatky</div>
-      </div>
-    </div>
-    <div class="decade-card">
-      <div class="decade-num">03 / 04</div>
-      <h2 class="decade-label">90. léta</h2>
-      <div>
-        <div class="decade-count">07</div>
-        <div class="decade-count-label">křižovatek</div>
-      </div>
-    </div>
-    <div class="decade-card">
-      <div class="decade-num">04 / 04</div>
-      <h2 class="decade-label">Po 2000</h2>
-      <div>
-        <div class="decade-count">16</div>
-        <div class="decade-count-label">křižovatek</div>
-      </div>
+  <!-- =================== ČÁST 01 — VE SVĚTĚ =================== -->
+  <div class="chapter-divider">
+    <div class="chapter-num">01 / 02</div>
+    <h2 class="chapter-title">Ve světě</h2>
+  </div>
+
+  <!-- Intro -->
+  <div class="article">
+    <div class="article-section">
+      <div class="section-label">Úvod</div>
+      <h3 class="section-title">Auta v New Jersey</h3>
+      <p>Potřeba mimoúrovňových křižovatek se začala objevovat současně s nárůstem automobilové dopravy, který zažil svůj první boom ve 20. letech minulého století. Se zvýšením hustoty proudu začalo být čím dál obtížnější odbočení vlevo a s ním rostl i počet nehod tohoto typu. Významně se problém začal projevovat v New Jersey. V roce 1909 zde byla ustanovena <em>State Highway Commission</em>, která měla na starosti zlepšení dopravní infrastruktury.</p>
+      <p>V roce 1916 bylo ve státě New Jersey registrováno přes 100 000 vozidel (v roce 1906 pouze 4,5 tisíce). New Jersey leželo na spojnici mezi New Yorkem a Filadelfií a vzrůstající suburbanizace a tovární čtvrti mimo města způsobovaly velkou zátěž místních komunikací. State Highway Commission se proto v roce 1917 stala plnohodnotným departmentem státu a začala plánovat státní systém 15 dálnic, který v následujících letech narůstal až na 43 dálnic v roce 1927.<span class="ref-sup">[1]</span></p>
+      <p>Nejen na těchto dálnicích se začala zvyšovat nehodovost na křížení a stoupala také potřeba po plynulém převedení dopravy. Jednou z možností byly kruhové objezdy, které eliminovaly krizové odbočení vlevo — v New Jersey se začaly budovat už od roku 1905. Pro dálnice ale brzy nestačily: doprava na nich musela výrazně zpomalit, nebo byly poloměrové oblouky příliš veliké.</p>
     </div>
   </div>
 
-  <section class="placeholder-section">
-    <div class="placeholder-tag">Připravujeme</div>
-    <h2>Detailní časová osa</h2>
-    <p>Pro každé období doplníme kontext: dobové fotky, plánovací dokumenty, klíčové stavby a jejich vliv na rozvoj pražské sítě.</p>
+  <!-- BLUE BLOCK: 01.1 Patent + 3 sheets -->
+  <div class="highlight-block">
+    <div class="article-section">
+      <div class="section-label">01.1 — Patent</div>
+      <h3 class="section-title">První patent, 1916</h3>
+      <p>Prvotní návrh dnes již není možné s jistotou ověřit — některé zdroje mluví o francouzském nápadu, jiné se odkazují na zrealizovanou křižovatku v Argentině v provozu už ve dvacátých letech. S určitostí však lze dohledat první patent: ten si nechal zapsat americký stavební inženýr <strong>Arthur Hale</strong> dne 24. 5. 1915 pod kódem US1173505A se čtyřmi výkresy.<span class="ref-sup">[2]</span></p>
+      <p>K patentu mimo jiné doplnil: <em>„This invention relates to street crossings and has for its object to provide a construction suitable for congested crossings which will render it unnecessary for traffic going in either direction on one street to ever cross at grade the traffic going in either direction on the other street; or even to cross its own street at grade when it wishes to reverse its direction of travel."</em></p>
+      <p>Křižovatka se vyznačuje velmi ostrými rameny a krátkými průplety. Návrh řeší pouze snížení křižných bodů na nulu, počítá ale s nízkou rychlostí vozidel — chybí odbočovací a připojovací pruhy.</p>
+    </div>
+
+    <div class="figure-grid figure-grid-tall">
+      <figure class="figure">
+        <div class="figure-img-wrap tall">
+          <img src="img/historie/01-hale-patent-1916_1.jpg" alt="Patent Arthura Hale US1173505A, výkres 1">
+        </div>
+        <figcaption class="figure-caption"><strong>Obr. 01a</strong> — Arthur Hale, US1173505A. Výkres 1 ze 4: půdorys křižovatky.</figcaption>
+      </figure>
+      <figure class="figure">
+        <div class="figure-img-wrap tall">
+          <img src="img/historie/01-hale-patent-1916_2.jpg" alt="Patent Arthura Hale US1173505A, výkres 2">
+        </div>
+        <figcaption class="figure-caption"><strong>Obr. 01b</strong> — Arthur Hale, US1173505A. Výkres 2: detail ramene a průpletů.</figcaption>
+      </figure>
+      <figure class="figure">
+        <div class="figure-img-wrap tall">
+          <img src="img/historie/01-hale-patent-1916_3.jpg" alt="Patent Arthura Hale US1173505A, výkres 3">
+        </div>
+        <figcaption class="figure-caption"><strong>Obr. 01c</strong> — Arthur Hale, US1173505A. Výkres 3: řezy a niveletní řešení.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- WHITE: 01.2 Cloverleaf -->
+  <div class="article">
+    <div class="article-split flip">
+      <div>
+        <div class="section-label">01.2 — Realizace</div>
+        <h3 class="section-title">Woodbridge Cloverleaf, 1929</h3>
+        <p>New Jersey Department odstartoval v roce 1928 stavbu NJ Road 25 (dnes značena jako US 1 / NJ 25) mezi Filadelfií a New York City. U Woodbridge křížila s významnou NJ Road 4 (dnes NJ 35). Úsek budovala firma Rudolph &amp; Delano. Inženýr <strong>Edward Delano</strong><span class="ref-sup">[3]</span> přišel se dvěma možnostmi křížení — kruhovým objezdem a „cloverleaf" křížením, které viděl na obálce časopisu z dálnice v Buenos Aires.<span class="ref-sup">[1]</span></p>
+        <p>Zprovozněna byla v roce <strong>1929</strong>.</p>
+      </div>
+      <figure class="figure">
+        <div class="figure-img-wrap cover">
+          <img src="img/historie/02-cloverleaf-woodbridge-1929.jpg" alt="Cloverleaf u Woodbridge, NJ, 1929">
+        </div>
+        <figcaption class="figure-caption"><strong>Obr. 02</strong> — Cloverleaf u Woodbridge, NJ, od Edwarda Delana, 1929.</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- BLUE BLOCK: 01.3 Evropa + 3 fotky -->
+  <div class="highlight-block">
+    <div class="article-section">
+      <div class="section-label">01.3 — Evropa</div>
+      <h3 class="section-title">První evropská mimoúrovňová křižovatka</h3>
+      <p>V Evropě jako první patentoval mimoúrovňové křížení Švýcar <strong>Will Sarbach</strong> dne 15. 10. 1928 — stejný čtyřlístkový typ. Návrh byl představen pro projekt <em>HaFraBa</em>, předchůdce dnešního dálničního systému v Německu propojující Hamburg, Frankfurt nad Mohanem a Basilej.</p>
+      <p>První mimoúrovňová křižovatka v Evropě byla otevřena ve Švédsku ve <strong>Slussen v centru Stockholmu v roce 1935</strong> (v současné době je přestavována). V následujícím roce další v Lipsku — dnes již zmodernizovaná mezi dálnicemi A9 a A14. Za první plně mimoúrovňovou křižovatku v Evropě však lze považovat až <strong>Kamener Kreuz</strong><span class="ref-sup">[4]</span> otevřenou v roce 1937 na A1 a A2, blízko Dortmundu.</p>
+      <p>Čtyřlístkové křižovatky záhy narazily na maxima své kapacity — průpletové pruhy byly příliš krátké. Dříve poměrně levná řešení s jedním mostním objektem se musela začít přestavovat. Příkladem takové transformace je právě <strong>Kamener Kreuz</strong>, který prošel mezi lety 2006 a 2009 významnou proměnou: zrušila se jedna zpětná rampa („lístek") a přidala se rampa přes tři kvadranty.</p>
+    </div>
+
+    <div class="figure-grid">
+      <figure class="figure">
+        <div class="figure-img-wrap cover">
+          <img src="img/historie/03-slussen-stockholm-1935.jpg" alt="Slussen, Stockholm, otevření 15. 10. 1935">
+        </div>
+        <figcaption class="figure-caption"><strong>Obr. 03</strong> — Slussen, Stockholm, otevření 15. 10. 1935. První mimoúrovňová křižovatka v Evropě.</figcaption>
+      </figure>
+      <figure class="figure">
+        <div class="figure-img-wrap cover">
+          <img src="img/historie/04-stockholm-bladh.jpg" alt="Slussen, Stockholm, Oscar Bladh">
+        </div>
+        <figcaption class="figure-caption"><strong>Obr. 04</strong> — Slussen, Stockholm, foto Oscar Bladh.</figcaption>
+      </figure>
+      <figure class="figure">
+        <div class="figure-img-wrap cover">
+          <img src="img/historie/05-kamener-kreuz.jpg" alt="Kamener Kreuz, A1 a A2, Německo">
+        </div>
+        <figcaption class="figure-caption"><strong>Obr. 05</strong> — Kamener Kreuz, A1 × A2, Německo (otevřeno 1937, přestavba 2006–2009).</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- =================== ČÁST 02 — PRAHA =================== -->
+  <div class="chapter-divider">
+    <div class="chapter-num">02 / 02</div>
+    <h2 class="chapter-title">Praha</h2>
+  </div>
+
+  <!-- WHITE: 02.1, 02.2, 02.3 -->
+  <div class="article">
+    <div class="article-section">
+      <div class="section-label">02.1 — 1920–1937</div>
+      <h3 class="section-title">Velká Praha a první komise</h3>
+      <p>Plánovaný rozvoj Prahy s koncepcí automobilové dopravy lze rozpoznat až v roce <strong>1920</strong> po přijetí zákona o Velké Praze, který stanovil legislativní základy rozvoje města. Zákon umožnil vzniknout <em>Státní regulační komisi pro hlavní město a okolí</em>, jejímž úkolem bylo plánovat a řídit stavební rozvoj hlavního města.</p>
+      <p>Komise začala pracovat i na návrhu dopravního systému, který se orientoval na okruh kolem historického jádra, ke kterému byla předměstí připojena radiálami. Tento převážně radiální systém se s postupným nárůstem dopravy začal projevovat nevhodně — a nastal úkol najít vhodnější řešení.</p>
+      <p>Dopravní soutěž vyhrál v roce <strong>1930 prof. arch. Krejcar</strong>, který pro Prahu navrhl <em>tečnový trojúhelník</em>: jeho vrcholy se nacházely na Zbraslavi, Kbelích a Přední Kopanině. Jižní část byla doplněna tangentou (odpovídající dnešní trase Městského okruhu). Úskalím návrhu byla velká vzdálenost od centra a necitlivé trasování vzhledem k morfologii terénu.</p>
+      <p>Plán Státní regulační komise z roku <strong>1937</strong> počítal s návrhem okruhu kolem urbanizovaného území, ponechával však centrální charakter komunikační sítě. Okružní komunikace měla procházet částmi Prosek, Kbely, Kyje, Štěrboholy, Hostivař a Spořilov.</p>
+    </div>
+
+    <div class="article-section">
+      <div class="section-label">02.2 — 1948–1974</div>
+      <h3 class="section-title">Rošt, ZÁKOS, magistrála</h3>
+      <p>Během druhé světové války a v tíživé ekonomické situaci po ní se nárůst automobilové dopravy výrazně zpomalil. Směrný územní plán z roku <strong>1948</strong> významně zmenšil okružní komunikaci — měla vést kolem Kobylis, Proseku, Hloubětína, přes Hrdlořezy, Malešice, kolem Strašnic, v západní části po trase dnešního Městského okruhu.</p>
+      <p>Novou koncepci přinesly až <strong>60. léta</strong> po provedení Generálního dopravního průzkumu v Praze, na základě kterého bylo vytvořeno dopravní řešení <em>roštového systému</em>. Ukotveno bylo v návrhu Směrného územního plánu z roku <strong>1964</strong>. Rošt se skládal ze dvou tangent a tří magistrál doplněných o vnější okruh.</p>
+      <p>V <strong>70. letech</strong> docházelo kvůli nárůstu automobilové dopravy k přechodu opět na systém radiálně okružný (<strong>ZÁKOS — základní komunikační systém, 1974</strong>) založený na 11 radiálách a třech okruzích. V obou posledně zmíněných systémech byla zařazena i druhá severo-jižní magistrála, která se jako první realizovala. Ne však ve své původní podobě — kvůli omezeným investicím se před budovou Státní opery rozdvojila a nevedla už po plánované estakádě za Národním muzeem, ale v jedné stopě před ním.</p>
+    </div>
+
+    <div class="article-section">
+      <div class="section-label">02.3 — 1999 → dnes</div>
+      <h3 class="section-title">Dva okruhy a šest radiál</h3>
+      <p>Současná hierarchie dopravní sítě vychází z Územního plánu přijatého v roce <strong>1999</strong>. Magistrát rozhodl o zrušení Vnitřního okruhu a upravil trasu Středního okruhu. Nadřazený systém tak zahrnoval okruhy už jen dva: vnější <strong>Pražský</strong> a vnitřní <strong>Městský</strong>. Okruhy propojuje celkem šest radiál: Chodovská, Chuchelská, Prosecká, Vysočanská a Štěrboholská, doplněná Spořilovskou spojkou. Hlavní myšlenkou je ochrana města před průjezdnou dopravou pomocí Pražského okruhu a regulační prvek vnitroměstské dopravy pomocí Městského okruhu.</p>
+      <p>Na Pražský okruh (dálnici <strong>D0</strong>) jsou v rámci celostátní dopravní sítě napojeny radiálně dálnice D1 (Brno), D5 (Plzeň), D6 (Karlovy Vary), D7 (Slaný), D8 (Ústí nad Labem), D10 (Mladá Boleslav) a D11 (Hradec Králové). Plánovaně bude na okruh napojeno 9 radiálních dálnic (kromě výše jmenovaných přibudou D3, D4, D9) a 2 silnice I. třídy I/2 a I/12.</p>
+      <p>Z Městského okruhu je dnes v provozu většina trasy, zbývající východní část by měla být hotová do roku 2026. Z dopravního hlediska ji dnes nahrazuje Průmyslový polookruh. Absence jihovýchodní části Pražského okruhu se negativně projevuje v urbanizované části města — tranzitní doprava je dnes vedena ulicemi 5. května, Spořilovskou a Brněnskou.<span class="ref-sup">[5]</span></p>
+    </div>
+  </div>
+
+  <!-- BLUE BLOCK: 02.4 První v ČR -->
+  <div class="highlight-block">
+    <div class="article-split">
+      <div>
+        <div class="section-label">02.4 — 4. 10. 1978</div>
+        <h3 class="section-title">První v Česku</h3>
+        <p>V Česku byla první plně mimoúrovňová křižovatka zprovozněna <strong>4. 10. 1978</strong> na úseku D1 a D2 u Brna. Šlo o čtyřlístkový typ, podobný americkému cloverleafu, který se v té době rozvíjel po celém světě.</p>
+        <p>V Praze následovaly stavby v rámci budování severojižní magistrály a postupně i Městského a Pražského okruhu. Většina pražských mimoúrovňových křižovatek vznikla v <strong>70. a 80. letech</strong>, další vlna pak po roce 2000 v souvislosti s dostavbou Pražského okruhu.</p>
+      </div>
+      <figure class="figure">
+        <div class="figure-img-wrap cover">
+          <img src="img/historie/06-d1-d2-brno-1978.jpg" alt="Křížení D1 a D2 u Brna, 1978">
+        </div>
+        <figcaption class="figure-caption"><strong>Obr. 06</strong> — Křížení D1 a D2 u Brna. První mimoúrovňová křižovatka v Česku (1978).</figcaption>
+      </figure>
+    </div>
+  </div>
+
+  <!-- =================== ZDROJE =================== -->
+  <section class="sources">
+    <h3>Zdroje</h3>
+    <ol>
+      <li>SICA, Dave; WEISGERBER, Eric. <em>The Woodbridge Cloverleaf: Onramps to Innovation</em>. YouTube, 2022. Dostupné z: <a href="https://www.youtube.com/watch?v=25ujQBf3ads" target="_blank" rel="noopener">youtube.com/watch?v=25ujQBf3ads</a> [cit. 8. 5. 2022]</li>
+      <li>HALE, Arthur. <em>Street crossing</em>. US patent 1173505A, podáno 24. 5. 1915. Google Patents. Dostupné z: <a href="https://patents.google.com/patent/US1173505" target="_blank" rel="noopener">patents.google.com/patent/US1173505</a> [cit. 8. 5. 2022]</li>
+      <li><em>Dr. Patrick's Postcard Roadside: Woodbridge Cloverleaf</em>. Society for Commercial Archeology. Dostupné z: <a href="https://sca-roadside.org/dr-patricks-postcard-roadside-woodbridge-cloverleaf/" target="_blank" rel="noopener">sca-roadside.org/dr-patricks-postcard-roadside-woodbridge-cloverleaf</a> [cit. 8. 5. 2022]</li>
+      <li><em>Verkehr: Koalition will Standstreifen bei Stau freigeben</em>. WELT. Dostupné z: <a href="https://www.welt.de/motor/article4867889/Koalition-will-Standstreifen-bei-Stau-freigeben.html" target="_blank" rel="noopener">welt.de/motor/article4867889</a> [cit. 9. 5. 2022]</li>
+      <li>SATRA, spol. s r.o. <em>Historický vývoj názorů na uspořádání komunikační sítě</em>, 2012. Dostupné z: <a href="http://mestskyokruh.info/system-nadrazene-site-komunikaci/historie-nadrazene-komunikacni-site/historicky-vyvoj/" target="_blank" rel="noopener">mestskyokruh.info/.../historicky-vyvoj</a> [cit. 7. 2. 2017]</li>
+      <li>Obr. 02 — sca-roadside.org, dostupné 9. 5. 2022. Obr. 03 a 04 — Wikimedia Commons, dostupné 9. 5. 2022. Obr. 05 — © maps.google.com, dostupné 9. 5. 2022. Obr. 06 — © ČÚZK, dostupné 9. 5. 2022.</li>
+      <li>Text vychází z kapitoly <em>Historie</em> bakalářské seminární práce, Kodet T., FA ČVUT, 2022.</li>
+    </ol>
   </section>
 </main>
 
