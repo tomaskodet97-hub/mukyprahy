@@ -11,8 +11,8 @@
       --blue: #1E3D7C;
       --blue-light: #6E89B8;
       --blue-tint: rgba(30,61,124,0.08);
-      --green: #2E7D32;
-      --green-tint: rgba(46,125,50,0.08);
+      --green: #6A8A6E;
+      --green-tint: rgba(106,138,110,0.08);
     }
     body[data-page="hra"] main { padding: 0; max-width: none; }
     body[data-page="hra"] .nav { border-radius: 0; }
@@ -328,8 +328,7 @@
       .game-frame.answered .game-body { padding-bottom: 90px; }
 
       /* Question image: full width, whole image visible */
-      .game-question-img,
-      .game-question-img.phase2 {
+      .game-question-img {
         width: 100%;
         height: auto;
         max-width: 100%;
@@ -337,6 +336,22 @@
         padding: 0;
       }
       .game-question-img.cover img { object-fit: cover; }
+      /* Phase 1 schema — let it size to its natural aspect, never crop */
+      .game-question-img.phase2 {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+        aspect-ratio: auto;
+        padding: 16px 8px;
+        min-height: 0;
+      }
+      .game-question-img.phase2 img {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        max-height: 60vh;
+        object-fit: contain;
+      }
 
       /* Answers: full width 2x2 grid */
       .game-question-side { width: 100%; height: auto; }
