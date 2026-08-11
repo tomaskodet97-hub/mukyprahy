@@ -9,7 +9,7 @@ Statický web (HTML/CSS/JS) o pražských mimoúrovňových křižovatkách.
 **Záložky:**
 - 🏠 Domů
 - 🎓 Akademie (typologie 16 typů)
-- 🎮 Hra (Typolog / Geolog / Detektiv)
+- 🎮 Hra (Typolog / Geograf / Detektiv)
 - 🗺️ Katalog (split-screen mapa + karty)
 - 📜 Historie (placeholder)
 - 🔮 Plánované (placeholder)
@@ -91,6 +91,22 @@ Statický web (HTML/CSS/JS) o pražských mimoúrovňových křižovatkách.
 - Náklady: ~200 Kč/rok (jen doména, hosting zdarma)
 - Postup aktualizace přes GitHub Desktop
 
+### ✅ Fáze 8 — Hra → Geograf (HOTOVO)
+- 10 otázek, 2 fáze, mapa Prahy (Leaflet + ortofoto IPR přes `exportImage`, Esri jako záloha)
+- Fáze 1 (1–5): výřez ortofota → volný zápich do mapy, XP podle vzdálenosti (100 XP do 100 m, 0 od 5 km)
+- Fáze 2 (6–10): schéma + názvy ulic → výběr z vyznačených bodů všech křižovatek (trefa 100 XP)
+- Shrnutí: XP, průměrná chyba zápichu, trefené body, nejdelší streak
+
+### ✅ Fáze 9 — Hra → Detektiv (HOTOVO)
+- 10 otázek, jedna fáze: vlevo starší ortofoto, uprostřed současné, vpravo 5 časových období
+- Období podle `doba_vystavby`: 70. léta / 80. léta / 90. léta / po roce 2000 / 2005
+- Vyvážené losování — 2 otázky z každého období (jinak by 21 ze 47 bylo „70. léta")
+- Bodování: přesně 100 XP, sousední období 40 XP, jinak 0; streak jen za přesnou trefu
+- Letopočty snímků jsou skryté do odpovědi (`rok_ortofoto_stary` jinak odpověď prozrazuje)
+- Shrnutí: XP, přesná datace, o období vedle, nejdelší streak
+
+**Otevřená otázka k datům:** „2005" (12 záznamů) a „po roce 2000" (6 záznamů) se logicky překrývají — 2005 je také po roce 2000. Zvážit sjednocení nebo přeznačení na `2000–2004` / `2005+`.
+
 ## 🎉 MVP HOTOVO
 
 Všech 7 fází dokončeno. Web je hratelný a publikovatelný.
@@ -103,8 +119,6 @@ Všech 7 fází dokončeno. Web je hratelný a publikovatelný.
 - Hra: vyber Typolog, projdi 10 otázek, zkontroluj shrnutí
 
 **Možná vylepšení do dalších fází:**
-- Geolog (Hra) — najdi křižovatku na mapě
-- Detektiv (Hra) — odhadni dobu výstavby
 - Historie — interaktivní timeline
 - Plánované — reálná data
 - Sdílení výsledku ze hry

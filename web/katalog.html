@@ -254,7 +254,6 @@
   });
 
   const markers = {};
-  let lastHighlighted = null;
   krizovatky.forEach(k => {
     if (k.lat == null) return;
     const icon = L.divIcon({
@@ -263,21 +262,11 @@
       iconSize: [14, 14], iconAnchor: [7, 7],
     });
     const m = L.marker([k.lat, k.lon], { icon }).addTo(map);
-    m.on("click", () => scrollToCard(k.tsk));
+    m.on("click", () => openModal(k.tsk));
     m.on("mouseover", () => highlightCard(k.tsk, true));
     m.on("mouseout", () => highlightCard(k.tsk, false));
     markers[k.tsk] = m;
   });
-
-  function scrollToCard(tsk) {
-    const card = grid.querySelector(`.k-card[data-tsk="${tsk}"]`);
-    if (!card) return;
-    // remove previous persistent highlight
-    if (lastHighlighted) lastHighlighted.classList.remove("highlighted");
-    card.classList.add("highlighted");
-    lastHighlighted = card;
-    card.scrollIntoView({ behavior: "smooth", block: "center" });
-  }
 
   let activeList = krizovatky;
 

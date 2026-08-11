@@ -6,6 +6,8 @@
   <title>Hra · pražské mimoúrovňové křižovatky</title>
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     :root {
       --blue: #1E3D7C;
@@ -378,6 +380,266 @@
       .phase-tag { font-size: 8px; padding: 2px 6px; }
       .game-stats { gap: 10px; font-size: 8px; }
     }
+
+    /* ============================================================
+       GEOGRAF — mapa
+       ============================================================ */
+    .map-panel {
+      position: relative;
+      width: min(100%, calc(100vh - var(--game-reserved)));
+      height: min(100%, calc(100vh - var(--game-reserved)));
+      aspect-ratio: 1;
+      border: 1px solid var(--blue);
+      background: var(--blue-tint);
+      overflow: hidden;
+    }
+    #geo-map { position: absolute; inset: 0; background: #0e1a33; }
+
+    /* modrý kruh jako kurzor */
+    #geo-map, #geo-map .leaflet-grab, #geo-map .leaflet-interactive,
+    #geo-map.leaflet-container, #geo-map .leaflet-container {
+      cursor: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='30' height='30'%3E%3Ccircle cx='15' cy='15' r='9' fill='rgba(30,61,124,0.18)' stroke='%231E3D7C' stroke-width='2.5'/%3E%3Ccircle cx='15' cy='15' r='1.6' fill='%231E3D7C'/%3E%3C/svg%3E") 15 15, crosshair !important;
+    }
+    #geo-map.leaflet-dragging, #geo-map.leaflet-dragging .leaflet-grab { cursor: grabbing !important; }
+    #geo-map .leaflet-control-zoom a {
+      border-radius: 0 !important;
+      color: var(--blue);
+      border-color: var(--blue);
+      font-weight: 700;
+    }
+    #geo-map .leaflet-control-attribution {
+      background: rgba(255,255,255,0.82);
+      font-size: 9px;
+      border-radius: 0 !important;
+      color: var(--blue);
+    }
+    #geo-map .leaflet-bar { border-radius: 0 !important; box-shadow: none; border: 1px solid var(--blue); }
+
+    /* overlay nápověda uvnitř mapy */
+    .map-hint {
+      position: absolute;
+      left: 0; right: 0; top: 0;
+      z-index: 500;
+      background: var(--blue);
+      color: white;
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .map-hint .map-hint-dist { font-weight: 800; letter-spacing: -0.01em; text-transform: none; font-size: 12px; }
+
+    .map-reset {
+      position: absolute;
+      right: 8px; bottom: 8px;
+      z-index: 500;
+      background: white;
+      color: var(--blue);
+      border: 1px solid var(--blue);
+      font-family: inherit;
+      font-size: 9px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 5px 9px;
+      cursor: pointer;
+    }
+    .map-reset:hover { background: var(--blue); color: white; }
+
+    /* akční lišta pro potvrzení odhadu */
+    .confirm-bar {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      background: white;
+      border-top: 1px solid var(--blue);
+      padding: 8px clamp(16px, 3vw, 32px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 20;
+    }
+    .confirm-text { font-size: 12px; color: var(--blue-light); }
+    .confirm-text strong { color: var(--blue); font-weight: 800; }
+    .btn-confirm {
+      background: var(--blue);
+      color: white;
+      border: 1px solid var(--blue);
+      padding: 7px 16px;
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .btn-confirm:disabled { opacity: 0.35; cursor: not-allowed; }
+    .btn-confirm:not(:disabled):hover { background: white; color: var(--blue); }
+
+    .feedback-bar.partial { background: var(--blue); border-top-color: var(--blue); }
+    .feedback-bar.partial .btn-next { background: white; color: var(--blue); border-color: white; }
+    .feedback-bar.partial .btn-next:hover { background: transparent; color: white; }
+
+    .result-stats.four { grid-template-columns: repeat(4, 1fr); }
+    @media (max-width: 700px) { .result-stats.four { grid-template-columns: repeat(2, 1fr); } }
+    .result-stats.four .result-stat { padding-left: 20px; padding-right: 20px; }
+    .result-stats.four .result-stat:first-child { padding-left: 0; }
+    .result-stats.four .result-stat-num { font-size: clamp(32px, 4.5vw, 64px); }
+
+    /* levý panel fáze 2: schéma + popis křížení */
+    .scheme-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+    .scheme-panel .game-question-img.phase2 { flex: 1; min-height: 0; }
+    .scheme-caption {
+      border-top: 1px solid var(--blue);
+      border-bottom: 1px solid var(--blue);
+      padding: 8px 16px;
+      text-align: center;
+      max-width: 100%;
+      flex-shrink: 0;
+    }
+    .scheme-caption-label {
+      display: block;
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+      margin-bottom: 3px;
+    }
+    .scheme-caption-name {
+      display: block;
+      font-size: clamp(15px, 1.9vw, 26px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+      color: var(--blue);
+    }
+
+    /* fallback, když se obrázek nenačte */
+    .game-question-img.img-failed { background: var(--blue-tint); border: 1px dashed var(--blue-light); }
+    .game-question-img.img-failed img { display: none; }
+    .game-question-img.img-failed::after {
+      content: attr(data-failmsg);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+    }
+
+    /* fáze 2 — kurzor nad vybíratelnými body */
+    .map-panel.picking #geo-map .leaflet-interactive { cursor: pointer !important; }
+    #geo-map .leaflet-tooltip {
+      border-radius: 0;
+      border: 1px solid var(--blue);
+      background: white;
+      color: var(--blue);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      box-shadow: none;
+    }
+    #geo-map .leaflet-tooltip-top::before { border-top-color: var(--blue); }
+
+    @media (max-width: 900px) {
+      .map-panel { width: 100%; height: auto; aspect-ratio: 1; max-width: 100%; }
+      .confirm-bar { position: fixed; padding: 10px 14px; }
+      .scheme-panel { height: auto; }
+      .scheme-panel .game-question-img.phase2 { flex: none; }
+      .scheme-caption-name { font-size: 18px; }
+    }
+
+    /* ============================================================
+       DETEKTIV — dvojice ortofot + časová období
+       ============================================================ */
+    .game-body.det { grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(210px, 300px); }
+    @media (max-width: 900px) { .game-body.det { grid-template-columns: 1fr; } }
+
+    .det-photo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+    }
+    .det-photo .game-question-img {
+      flex: 0 1 auto;
+      width: min(100%, calc((100vh - var(--game-reserved)) * 0.78));
+      height: min(100%, calc((100vh - var(--game-reserved)) * 0.78));
+    }
+    .det-photo-cap {
+      flex-shrink: 0;
+      border-top: 1px solid var(--blue);
+      padding: 6px 14px;
+      text-align: center;
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+    }
+    .det-photo-cap strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 15px;
+      letter-spacing: -0.02em;
+      text-transform: none;
+      font-weight: 800;
+      color: var(--blue);
+    }
+
+    .det-side { justify-content: center; gap: 14px; }
+    .det-question {
+      width: 100%;
+      max-width: 380px;
+      border-top: 1px solid var(--blue);
+      border-bottom: 1px solid var(--blue);
+      padding: 10px 0;
+      text-align: left;
+    }
+    .det-krizeni {
+      display: block;
+      margin-top: 4px;
+      font-size: clamp(15px, 1.5vw, 22px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.05;
+      color: var(--blue);
+    }
+    .det-prompt {
+      width: 100%;
+      max-width: 380px;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--blue-light);
+    }
+    .answers-list.five { grid-template-rows: repeat(5, 1fr); height: auto; }
+    .answers-list.five .answer-text { min-height: 40px; }
+    .answer-text.near { background: var(--blue-tint); }
+    .progress-dot.partial { background: var(--blue-light); }
+    @media (max-width: 900px) {
+      .det-photo { height: auto; }
+      .det-photo .game-question-img { width: 100%; height: auto; max-width: 100%; aspect-ratio: 1; }
+      .det-question, .det-prompt, .answers-list.five { max-width: 100%; }
+    }
   </style>
 </head>
 <body data-page="hra" class="page-hra">
@@ -401,7 +663,7 @@
     app.innerHTML = `
       <section class="hra-hero">
         <div class="hra-hero-top">
-          <div class="hra-hero-meta">Hra · 5+5 otázek</div>
+          <div class="hra-hero-meta">Hra · 10 otázek</div>
           <div class="hra-hero-meta">3 charaktery</div>
         </div>
         <h1>Hra</h1>
@@ -422,32 +684,36 @@
           <div class="char-meta">10 otázek · 2 fáze</div>
           <svg class="char-arrow" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 24 L 24 8 M 12 8 L 24 8 L 24 20"/></svg>
         </button>
-        <button class="char-card disabled" data-char="geograf">
+        <button class="char-card" data-char="geograf">
           <div>
             <div class="char-num">02 / 03</div>
-            <div class="char-soon-badge">Připravujeme</div>
           </div>
           <div>
             <h2 class="char-name">Geograf</h2>
-            <p class="char-desc" style="margin-top: 14px;">Najdi křižovatku na mapě Prahy. Body podle přesnosti.</p>
+            <p class="char-desc" style="margin-top: 14px;">Nejdřív zapíchni výřez ortofota do mapy Prahy. Pak podle schématu a názvů ulic vyber správný bod.</p>
           </div>
-          <div class="char-meta">brzy</div>
+          <div class="char-meta">10 otázek · 2 fáze</div>
+          <svg class="char-arrow" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 24 L 24 8 M 12 8 L 24 8 L 24 20"/></svg>
         </button>
-        <button class="char-card disabled" data-char="detektiv">
+        <button class="char-card" data-char="detektiv">
           <div>
             <div class="char-num">03 / 03</div>
-            <div class="char-soon-badge">Připravujeme</div>
           </div>
           <div>
             <h2 class="char-name">Detektiv</h2>
-            <p class="char-desc" style="margin-top: 14px;">Odhadni dobu výstavby z ortofotomapy. Čtyři časová období.</p>
+            <p class="char-desc" style="margin-top: 14px;">Porovnej starý a současný letecký snímek a urči, kdy křižovatka vznikla.</p>
           </div>
-          <div class="char-meta">brzy</div>
+          <div class="char-meta">10 otázek · 5 období</div>
+          <svg class="char-arrow" width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 24 L 24 8 M 12 8 L 24 8 L 24 20"/></svg>
         </button>
       </div>`;
     app.querySelectorAll(".char-card[data-char]").forEach(c => {
       if (c.classList.contains("disabled")) return;
-      c.addEventListener("click", () => startTypolog());
+      c.addEventListener("click", () => {
+        if (c.dataset.char === "geograf") startGeograf();
+        else if (c.dataset.char === "detektiv") startDetektiv();
+        else startTypolog();
+      });
     });
   }
 
@@ -628,6 +894,652 @@
         </div>
       </section>`;
     document.getElementById("play-again").addEventListener("click", startTypolog);
+    document.getElementById("other-char").addEventListener("click", screenCharSelect);
+  }
+
+  /* ============================================================
+     GEOGRAF
+     ============================================================ */
+
+  const PRAHA_CENTER = [50.0755, 14.4378];
+  const PRAHA_BOX = { s: 49.925, w: 14.19, n: 50.19, e: 14.74 };
+  const IPR_EXPORT = "https://gs-pub.praha.eu/imgs/rest/services/ort/letecke_snimkovani/ImageServer/exportImage";
+  const WEB_MERC_R = 20037508.342789244;
+
+  function inPraha(k) {
+    return typeof k.lat === "number" && typeof k.lon === "number" &&
+      k.lat >= PRAHA_BOX.s && k.lat <= PRAHA_BOX.n &&
+      k.lon >= PRAHA_BOX.w && k.lon <= PRAHA_BOX.e;
+  }
+
+  // IPR ortofoto (S-JTSK) přeprojektované serverem do Web Merkátoru po dlaždicích.
+  // Konstruuje se líně, aby výpadek Leafletu neshodil celou stránku.
+  let _IprOrtofoto = null;
+  function iprLayer() {
+    if (!_IprOrtofoto) {
+      _IprOrtofoto = L.TileLayer.extend({
+        getTileUrl: function (coords) {
+          const span = (2 * WEB_MERC_R) / Math.pow(2, coords.z);
+          const xmin = -WEB_MERC_R + coords.x * span;
+          const ymax = WEB_MERC_R - coords.y * span;
+          return IPR_EXPORT
+            + "?bbox=" + [xmin, ymax - span, xmin + span, ymax].join(",")
+            + "&bboxSR=3857&imageSR=3857&size=256,256"
+            + "&format=jpg&interpolation=RSP_BilinearInterpolation&f=image";
+        }
+      });
+    }
+    return new _IprOrtofoto("", {
+      maxZoom: 19,
+      attribution: 'Ortofoto &copy; <a href="https://geoportalpraha.cz/">IPR Praha</a>',
+    });
+  }
+
+  // "Seifertova, Husitská" → "Seifertova × Husitská"
+  function krizeniLabel(ulice) {
+    return String(ulice || "").split(",").map(s => s.trim()).filter(Boolean).join(" × ");
+  }
+
+  function fmtDist(m) {
+    if (m < 1000) return Math.round(m) + " m";
+    return (m / 1000).toFixed(m < 10000 ? 2 : 1).replace(".", ",") + " km";
+  }
+
+  // 100 b. do 100 m, lineárně dolů, nula od 5 km
+  function scoreFor(d) {
+    if (d <= 100) return 100;
+    return Math.max(0, Math.round(100 * (1 - (d - 100) / 4900)));
+  }
+
+  const GEO_HIT_LINES = [
+    ["Zápich do centimetru.", 100],
+    ["Trefa. Přesně tam stojí.", 90],
+    ["Blízko, jen o pár bloků vedle.", 70],
+    ["Správná čtvrť, špatná křižovatka.", 45],
+    ["To už je jiná městská část.", 20],
+    ["Tohle už ani nebyla Praha.", 0],
+  ];
+  function hitLine(score) {
+    for (const [txt, min] of GEO_HIT_LINES) if (score >= min) return txt;
+    return GEO_HIT_LINES[GEO_HIT_LINES.length - 1][0];
+  }
+
+  const GEO_TRASH_LINES = [
+    "Zeměpis ti ve škole moc nešel, co?",
+    "Tos zapíchl*a tak mimo, že tě navigace přepočítává dodnes.",
+    "Praha má 22 obvodů. Ty jsi našel*a asi 23.",
+    "S tímhle orientačním smyslem nesmíš do Prahy ani na výlet.",
+    "Zapíchávat naslepo umí i holub. Ten ale trefí.",
+    "Tvoje odhady mají přesnost pražské MHD o víkendu.",
+    "Tohle nebyl zeměpis, to byla loterie.",
+    "Ty jsi neztratil*a jen body, ty jsi ztratil*a i sever.",
+    "Kdyby ses tak vyznal*a v Praze jako v ničem, pořád je to málo.",
+    "Podle tebe je Braník kousek od Letňan. Chápu.",
+    "Zapichoval*a jsi jako slepý*á do vosího hnízda.",
+    "Do Prahy tě pouštíme, ale jen s doprovodem.",
+    "Tolik metrů vedle, že už to má vlastní PSČ.",
+    "Mapa Prahy tě odhlásila z odběru.",
+  ];
+  const GEO_WIN_LINES = [
+    "Ty máš Prahu vypálenou do sítnice.",
+    "Zápich za zápichem. Katastrální úřad zvedá obočí.",
+    "Tohle je znalost města na úrovni taxikáře z roku 1998.",
+    "Praha nemá jedinou křižovatku, kterou bys neznal*a.",
+  ];
+
+  function startGeograf() {
+    if (typeof L === "undefined") {
+      app.innerHTML = `
+        <section class="result">
+          <div class="result-top"><div class="result-meta">Geograf</div></div>
+          <p class="result-line-big">Mapa se nenačetla.</p>
+          <div>
+            <p class="result-line">Knihovna mapy (Leaflet) se nepodařilo stáhnout — zkontroluj připojení k internetu a načti stránku znovu.</p>
+            <div class="result-ctas"><button class="btn-result outline" id="other-char">Zpět na výběr</button></div>
+          </div>
+        </section>`;
+      document.getElementById("other-char").addEventListener("click", screenCharSelect);
+      return;
+    }
+
+    const pool = krizovatky.filter(inPraha);
+    // odfiltruj prakticky totožné pozice, ať nejsou dvě stejné otázky
+    const seen = new Set();
+    const unique = [];
+    for (const k of [...pool].sort(() => Math.random() - 0.5)) {
+      const key = k.lat.toFixed(3) + "|" + k.lon.toFixed(3);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      unique.push(k);
+    }
+    const picked = unique.slice(0, TOTAL_QUESTIONS);
+    const questions = picked.map((k, i) => ({ k, phase: i < PHASE_BREAK ? 1 : 2 }));
+
+    const state = {
+      questions, idx: 0, score: 0, streak: 0, maxStreak: 0,
+      results: [], answered: false, guess: null,
+      allPoints: pool,        // body pro fázi 2
+      map: null, guessMarker: null,
+    };
+    renderGeoQuestion(state);
+  }
+
+  function renderGeoQuestion(state) {
+    document.body.classList.add("in-game");
+    const q = state.questions[state.idx];
+    const k = q.k;
+    const isPin = q.phase === 1;
+    const total = state.questions.length;
+
+    const progressHtml = state.questions.map((_, i) => {
+      let cls = "progress-dot";
+      if (i < state.results.length) cls += state.results[i].score >= 50 ? " done" : " wrong";
+      else if (i === state.idx) cls += " current";
+      return `<div class="${cls}"></div>`;
+    }).join("");
+
+    // ---- levý panel ----
+    const leftHtml = isPin
+      ? `<div class="game-question-img cover" data-failmsg="Ortofoto se nenačetlo">
+           <img src="${AppData.ortofotoPath(k.tsk, k.rok_ortofoto_novy)}" alt="Ortofoto křižovatky"
+                loading="eager" onerror="this.closest('.game-question-img').classList.add('img-failed')">
+         </div>`
+      : `<div class="scheme-panel">
+           <div class="game-question-img phase2" data-failmsg="Schéma se nenačetlo">
+             <img src="${AppData.schemaPath(k.tsk)}" alt="Schéma křižovatky"
+                  loading="eager" onerror="this.closest('.game-question-img').classList.add('img-failed')">
+           </div>
+           <div class="scheme-caption">
+             <span class="scheme-caption-label">Křížení</span>
+             <span class="scheme-caption-name">${krizeniLabel(k.ulice)}</span>
+           </div>
+         </div>`;
+
+    const hintStart = isPin ? "Zapíchni bod na mapě" : "Vyber správný bod";
+    const confirmStart = isPin
+      ? "Podle výřezu ortofota klikni do mapy tam, kde tahle křižovatka leží."
+      : "Na mapě jsou vyznačené všechny mimoúrovňové křižovatky. Klikni na tu správnou.";
+
+    app.innerHTML = `
+      <div class="game-frame answered">
+        <div class="game-topbar">
+          <div class="game-progress">${progressHtml}</div>
+          <div class="phase-tag">${isPin ? "Fáze 01 · Ortofoto → Zápich" : "Fáze 02 · Schéma → Výběr bodu"}</div>
+          <div class="game-stats">
+            <span><strong>${state.idx + 1}</strong>/ ${total}</span>
+            <span><strong>${state.score}</strong>XP</span>
+            <span><strong>${state.streak}</strong>Streak</span>
+          </div>
+        </div>
+        <div class="game-body">
+          ${leftHtml}
+          <div class="game-question-side">
+            <div class="map-panel${isPin ? "" : " picking"}">
+              <div id="geo-map"></div>
+              <div class="map-hint" id="map-hint"><span>${hintStart}</span><span></span></div>
+              <button class="map-reset" id="map-reset" type="button">Celá Praha</button>
+            </div>
+          </div>
+        </div>
+        <div id="feedback-slot">
+          <div class="confirm-bar" id="confirm-bar">
+            <div class="confirm-text" id="confirm-text">${confirmStart}</div>
+            <button class="btn-confirm" id="confirm-btn" disabled>
+              ${isPin ? "Potvrdit zápich" : "Potvrdit výběr"}
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L 13 8 M 9 4 L 13 8 L 9 12"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>`;
+
+    const map = L.map("geo-map", {
+      center: PRAHA_CENTER,
+      zoom: 11,
+      minZoom: 10,
+      maxZoom: 19,
+      maxBounds: L.latLngBounds([PRAHA_BOX.s, PRAHA_BOX.w], [PRAHA_BOX.n, PRAHA_BOX.e]).pad(0.25),
+      maxBoundsViscosity: 0.9,
+      zoomControl: true,
+      attributionControl: true,
+    });
+    state.map = map;
+
+    // záložní podklad pod IPR (kdyby dlaždice IPR nedojely)
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19, attribution: "Esri",
+    }).addTo(map);
+    iprLayer().addTo(map);
+
+    setTimeout(() => map.invalidateSize(), 60);
+
+    const confirmBtn = document.getElementById("confirm-btn");
+    const confirmText = document.getElementById("confirm-text");
+    const hint = document.getElementById("map-hint");
+
+    state.guess = null;
+    state.guessMarker = null;
+    state.answered = false;
+
+    const truth = L.latLng(k.lat, k.lon);
+    let pickedIsCorrect = false;
+
+    if (isPin) {
+      // --- FÁZE 1: volný zápich ---
+      map.on("click", (e) => {
+        if (state.answered) return;
+        state.guess = e.latlng;
+        if (state.guessMarker) state.guessMarker.setLatLng(e.latlng);
+        else state.guessMarker = L.circleMarker(e.latlng, {
+          radius: 9, color: "#1E3D7C", weight: 3,
+          fillColor: "#1E3D7C", fillOpacity: 0.25, pane: "markerPane",
+        }).addTo(map);
+        confirmBtn.disabled = false;
+        confirmText.innerHTML = "Bod je zapíchnutý. Můžeš ho ještě posunout, nebo <strong>potvrdit</strong>.";
+        hint.innerHTML = "<span>Zápich umístěn</span><span></span>";
+      });
+    } else {
+      // --- FÁZE 2: výběr z vyznačených křižovatek ---
+      const dotStyle = { radius: 7, color: "#ffffff", weight: 2, fillColor: "#1E3D7C", fillOpacity: 0.95 };
+      const pickStyle = { radius: 10, color: "#1E3D7C", weight: 4, fillColor: "#ffffff", fillOpacity: 1 };
+      let selected = null;
+
+      state.dots = state.allPoints.map(p => {
+        const dot = L.circleMarker([p.lat, p.lon], dotStyle).addTo(map);
+        dot._tsk = p.tsk;
+        dot.on("click", (ev) => {
+          if (ev && ev.originalEvent) L.DomEvent.stopPropagation(ev.originalEvent);
+          if (state.answered) return;
+          if (selected) selected.setStyle(dotStyle);
+          selected = dot;
+          dot.setStyle(pickStyle).bringToFront();
+          state.guess = dot.getLatLng();
+          pickedIsCorrect = (p.tsk === k.tsk);
+          confirmBtn.disabled = false;
+          confirmText.innerHTML = "Bod vybraný. Můžeš změnit výběr, nebo <strong>potvrdit</strong>.";
+          hint.innerHTML = "<span>Bod vybrán</span><span></span>";
+        });
+        return dot;
+      });
+    }
+
+    document.getElementById("map-reset").addEventListener("click", () => {
+      map.setView(PRAHA_CENTER, 11);
+    });
+
+    confirmBtn.addEventListener("click", () => {
+      if (state.answered || !state.guess) return;
+      state.answered = true;
+      confirmBtn.disabled = true;
+
+      const dist = map.distance(state.guess, truth);
+      const pts = isPin ? scoreFor(dist) : (pickedIsCorrect ? 100 : 0);
+
+      state.results.push({ score: pts, dist, phase: q.phase, hit: isPin ? null : pickedIsCorrect });
+      state.score += pts;
+      if (pts >= 50) { state.streak += 1; state.maxStreak = Math.max(state.maxStreak, state.streak); }
+      else state.streak = 0;
+
+      // zneškodni ostatní body
+      if (state.dots) state.dots.forEach(d => {
+        d.setStyle({ fillOpacity: 0.35, opacity: 0.35 });
+        d.off("click");
+      });
+
+      const layer = L.layerGroup().addTo(map);
+      L.circleMarker(truth, {
+        radius: 11, color: "#6A8A6E", weight: 3,
+        fillColor: "#6A8A6E", fillOpacity: 0.4,
+      }).addTo(layer)
+        .bindTooltip(krizeniLabel(k.ulice), { permanent: true, direction: "top", offset: [0, -10] })
+        .openTooltip();
+
+      if (dist > 5) {
+        L.circleMarker(state.guess, {
+          radius: 8, color: "#C25A5F", weight: 3,
+          fillColor: "#C25A5F", fillOpacity: 0.25,
+        }).addTo(layer);
+        L.polyline([state.guess, truth], {
+          color: "#1E3D7C", weight: 2, dashArray: "5 5", opacity: 0.85,
+        }).addTo(layer);
+        map.fitBounds(L.latLngBounds([state.guess, truth]).pad(0.5), { maxZoom: 16 });
+      } else {
+        map.setView(truth, 16);
+      }
+
+      hint.innerHTML = `<span>${isPin ? "Vzdálenost" : (pickedIsCorrect ? "Trefa" : "Minul*a jsi o")}</span><span class="map-hint-dist">${pickedIsCorrect ? "0 m" : fmtDist(dist)}</span>`;
+
+      let barClass, fbText;
+      if (isPin) {
+        barClass = pts >= 90 ? "correct" : (pts >= 50 ? "partial" : "wrong");
+        fbText = `<strong>${hitLine(pts)}</strong> ${krizeniLabel(k.ulice)} — minul*a jsi o <strong>${fmtDist(dist)}</strong>. <strong>+${pts} XP</strong>`;
+      } else if (pickedIsCorrect) {
+        barClass = "correct";
+        fbText = `<strong>Přesně ta.</strong> ${krizeniLabel(k.ulice)}. <strong>+100 XP</strong>`;
+      } else {
+        barClass = "wrong";
+        fbText = `<strong>Špatný bod.</strong> Správně je ${krizeniLabel(k.ulice)} — o <strong>${fmtDist(dist)}</strong> vedle. <strong>+0 XP</strong>`;
+      }
+
+      document.getElementById("feedback-slot").innerHTML = `
+        <div class="feedback-bar ${barClass}">
+          <div class="feedback-text">${fbText}</div>
+          <button class="btn-next" id="next-btn">
+            ${state.idx + 1 < total ? "Další otázka" : "Shrnutí"}
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L 13 8 M 9 4 L 13 8 L 9 12"/></svg>
+          </button>
+        </div>`;
+
+      document.getElementById("next-btn").addEventListener("click", () => {
+        map.remove();
+        state.map = null;
+        state.dots = null;
+        if (state.idx + 1 < total) { state.idx += 1; renderGeoQuestion(state); }
+        else renderGeoResult(state);
+      });
+    });
+  }
+
+  function renderGeoResult(state) {
+    document.body.classList.remove("in-game");
+    const total = state.questions.length;
+    const maxScore = total * 100;
+    const pinDists = state.results.filter(r => r.phase === 1).map(r => r.dist);
+    const avg = pinDists.length ? pinDists.reduce((a, b) => a + b, 0) / pinDists.length : 0;
+    const picks = state.results.filter(r => r.phase === 2);
+    const hits = picks.filter(r => r.hit).length;
+    const pct = state.score / maxScore;
+    const isWin = pct >= 0.75;
+    const line = isWin ? pick(GEO_WIN_LINES) : pick(GEO_TRASH_LINES);
+
+    app.innerHTML = `
+      <section class="result">
+        <div class="result-top">
+          <div class="result-meta">Shrnutí · Geograf</div>
+          <div class="result-meta">${state.score} / ${maxScore} XP</div>
+        </div>
+        <div>
+          <p class="result-line-big">${line}</p>
+        </div>
+        <div>
+          <div class="result-stats four">
+            <div class="result-stat">
+              <div class="result-stat-label">XP získáno</div>
+              <div class="result-stat-num">${state.score}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">Průměrná chyba zápichu</div>
+              <div class="result-stat-num">${fmtDist(avg)}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">Trefené body</div>
+              <div class="result-stat-num">${hits}/${picks.length}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">Nejdelší streak</div>
+              <div class="result-stat-num">${state.maxStreak}</div>
+            </div>
+          </div>
+          <div class="result-ctas">
+            <button class="btn-result" id="play-again">
+              Hrát znovu
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L 13 8 M 9 4 L 13 8 L 9 12"/></svg>
+            </button>
+            <button class="btn-result outline" id="other-char">Vybrat jiný charakter</button>
+          </div>
+        </div>
+      </section>`;
+    document.getElementById("play-again").addEventListener("click", startGeograf);
+    document.getElementById("other-char").addEventListener("click", screenCharSelect);
+  }
+
+  /* ============================================================
+     DETEKTIV — odhadni dobu výstavby ze dvojice ortofot
+     ============================================================ */
+
+  // pořadí = časová osa, sousední období se hodnotí částečně
+  const ERAS = [
+    { key: "70. léta",      label: "70. léta",      hint: "Éra Severojižní magistrály a prvních radiál." },
+    { key: "80. léta",      label: "80. léta",      hint: "Dostavba Jižní spojky." },
+    { key: "90. léta",      label: "90. léta",      hint: "Strahovský tunel a první polistopadové stavby." },
+    { key: "po roce 2000",  label: "po roce 2000",  hint: "Přestavby a dostavby nového tisíciletí." },
+    { key: "2005",          label: "2005",          hint: "Vlna okolo dokončení severní části Městského okruhu." },
+  ];
+  const ERA_INDEX = new Map(ERAS.map((e, i) => [e.key, i]));
+  const DET_LETTERS = ["A", "B", "C", "D", "E"];
+
+  const DET_TRASH_LINES = [
+    "Ty bys datoval*a i vlastní narozeniny špatně.",
+    "Historie tě očividně minula. I s nadjezdem.",
+    "Tvoje datace má rozptyl půl století.",
+    "Detektiv? Spíš svědek, co si nic nepamatuje.",
+    "Kdyby bylo tvoje tipování beton, spadne to při první zimě.",
+    "Tolik vedle, že to nezachrání ani archiv IPR.",
+    "Ty bys Strahovský tunel hodil*a do Rakouska-Uherska.",
+    "Tohle nebylo vyšetřování, to bylo hádání na kostce.",
+    "Letecké snímky ti evidentně nic neříkají. Ani jeden.",
+    "Kdybys datoval*a stavby na úřadě, Praha je jedno velké staveniště.",
+    "S touhle pamětí ti nesvěříme ani kolaudaci psí boudy.",
+    "Beton, asfalt, panelák — a ty pořád nevíš, které to je desetiletí.",
+    "Případ neuzavřen. Detektiv odvolán.",
+  ];
+  const DET_WIN_LINES = [
+    "Ty čteš letecké snímky jako matriku.",
+    "Datace na desetiletí přesně. Archiváři blednou.",
+    "Případ uzavřen, a to elegantně.",
+    "Tobě neuteče ani jeden nově vyasfaltovaný metr.",
+  ];
+
+  function eraOf(k) {
+    return ERA_INDEX.has(k.doba_vystavby) ? k.doba_vystavby : null;
+  }
+
+  // 2 otázky z každého období; když období nestačí, doplň z nejbohatších zbytků
+  function pickBalanced(pool, perEra, total) {
+    const byEra = new Map(ERAS.map(e => [e.key, []]));
+    for (const k of [...pool].sort(() => Math.random() - 0.5)) {
+      const era = eraOf(k);
+      if (era) byEra.get(era).push(k);
+    }
+    const chosen = [];
+    const rest = [];
+    for (const e of ERAS) {
+      const list = byEra.get(e.key);
+      chosen.push(...list.slice(0, perEra));
+      rest.push(...list.slice(perEra));
+    }
+    rest.sort(() => Math.random() - 0.5);
+    while (chosen.length < total && rest.length) chosen.push(rest.shift());
+    return chosen.slice(0, total).sort(() => Math.random() - 0.5);
+  }
+
+  function startDetektiv() {
+    const pool = krizovatky.filter(k => eraOf(k) && k.rok_ortofoto_stary && k.rok_ortofoto_novy);
+    if (!pool.length) {
+      app.innerHTML = `
+        <section class="result">
+          <div class="result-top"><div class="result-meta">Detektiv</div></div>
+          <p class="result-line-big">Chybí data o době výstavby.</p>
+          <div class="result-ctas"><button class="btn-result outline" id="other-char">Zpět na výběr</button></div>
+        </section>`;
+      document.getElementById("other-char").addEventListener("click", screenCharSelect);
+      return;
+    }
+    const picked = pickBalanced(pool, 2, TOTAL_QUESTIONS);
+    const state = {
+      questions: picked.map(k => ({ k })),
+      idx: 0, score: 0, streak: 0, maxStreak: 0,
+      results: [], answered: false,
+    };
+    renderDetQuestion(state);
+  }
+
+  function renderDetQuestion(state) {
+    document.body.classList.add("in-game");
+    const q = state.questions[state.idx];
+    const k = q.k;
+    const total = state.questions.length;
+    const correctKey = eraOf(k);
+    const correctIdx = ERA_INDEX.get(correctKey);
+
+    const progressHtml = state.questions.map((_, i) => {
+      let cls = "progress-dot";
+      if (i < state.results.length) {
+        const p = state.results[i].pts;
+        cls += p === 100 ? " done" : (p > 0 ? " partial" : " wrong");
+      } else if (i === state.idx) cls += " current";
+      return `<div class="${cls}"></div>`;
+    }).join("");
+
+    const photo = (src, cap, id) => `
+      <div class="det-photo">
+        <div class="game-question-img cover" data-failmsg="Snímek se nenačetl">
+          <img src="${src}" alt="${cap}" loading="eager"
+               onerror="this.closest('.game-question-img').classList.add('img-failed')">
+        </div>
+        <div class="det-photo-cap" id="${id}">${cap}</div>
+      </div>`;
+
+    const answersHtml = `<div class="answers-list five">${ERAS.map((e, i) => `
+        <button class="answer-text" data-era="${e.key}">
+          <span>${e.label}</span>
+          <span class="answer-text-letter">${DET_LETTERS[i]}</span>
+        </button>`).join("")}</div>`;
+
+    app.innerHTML = `
+      <div class="game-frame">
+        <div class="game-topbar">
+          <div class="game-progress">${progressHtml}</div>
+          <div class="phase-tag">Ortofoto tehdy → dnes</div>
+          <div class="game-stats">
+            <span><strong>${state.idx + 1}</strong>/ ${total}</span>
+            <span><strong>${state.score}</strong>XP</span>
+            <span><strong>${state.streak}</strong>Streak</span>
+          </div>
+        </div>
+        <div class="game-body det">
+          ${photo(AppData.ortofotoPath(k.tsk, k.rok_ortofoto_stary), "Starší snímek", "cap-old")}
+          ${photo(AppData.ortofotoPath(k.tsk, k.rok_ortofoto_novy), "Současný snímek", "cap-new")}
+          <div class="game-question-side det-side">
+            <div class="det-question">
+              <span class="scheme-caption-label">Křížení</span>
+              <span class="det-krizeni">${krizeniLabel(k.ulice)}</span>
+            </div>
+            <div class="det-prompt">Kdy křižovatka vznikla?</div>
+            ${answersHtml}
+          </div>
+        </div>
+        <div id="feedback-slot"></div>
+      </div>`;
+
+    state.answered = false;
+
+    app.querySelectorAll(".answer-text").forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (state.answered) return;
+        state.answered = true;
+
+        const pickedKey = btn.dataset.era;
+        const pickedIdx = ERA_INDEX.get(pickedKey);
+        const gap = Math.abs(pickedIdx - correctIdx);
+        const pts = gap === 0 ? 100 : (gap === 1 ? 40 : 0);
+
+        app.querySelectorAll(".answer-text").forEach(b => {
+          b.disabled = true;
+          if (b.dataset.era === correctKey) b.classList.add("correct");
+          else if (b === btn) b.classList.add(pts > 0 ? "near" : "wrong");
+        });
+
+        state.results.push({ pts, gap, era: correctKey });
+        state.score += pts;
+        if (pts === 100) { state.streak += 1; state.maxStreak = Math.max(state.maxStreak, state.streak); }
+        else state.streak = 0;
+
+        // odhalení letopočtů snímků až po odpovědi, ať neprozrazují odpověď
+        const capOld = document.getElementById("cap-old");
+        const capNew = document.getElementById("cap-new");
+        if (capOld) capOld.innerHTML = `Starší snímek<strong>${k.rok_ortofoto_stary}</strong>`;
+        if (capNew) capNew.innerHTML = `Současný snímek<strong>${k.rok_ortofoto_novy}</strong>`;
+
+        document.querySelector(".game-frame")?.classList.add("answered");
+
+        const eraInfo = ERAS[correctIdx];
+        let barClass, fbText;
+        if (pts === 100) {
+          barClass = "correct";
+          fbText = `<strong>Přesně.</strong> ${krizeniLabel(k.ulice)} — <strong>${eraInfo.label}</strong>. ${eraInfo.hint} <strong>+100 XP</strong>`;
+        } else if (pts > 0) {
+          barClass = "partial";
+          fbText = `<strong>Skoro.</strong> Tipoval*a jsi ${ERAS[pickedIdx].label}, správně je <strong>${eraInfo.label}</strong> — ${krizeniLabel(k.ulice)}. <strong>+40 XP</strong>`;
+        } else {
+          barClass = "wrong";
+          fbText = `<strong>Vedle.</strong> ${krizeniLabel(k.ulice)} je <strong>${eraInfo.label}</strong>, ne ${ERAS[pickedIdx].label}. <strong>+0 XP</strong>`;
+        }
+
+        document.getElementById("feedback-slot").innerHTML = `
+          <div class="feedback-bar ${barClass}">
+            <div class="feedback-text">${fbText}</div>
+            <button class="btn-next" id="next-btn">
+              ${state.idx + 1 < total ? "Další otázka" : "Shrnutí"}
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L 13 8 M 9 4 L 13 8 L 9 12"/></svg>
+            </button>
+          </div>`;
+
+        document.getElementById("next-btn").addEventListener("click", () => {
+          if (state.idx + 1 < total) { state.idx += 1; renderDetQuestion(state); }
+          else renderDetResult(state);
+        });
+      });
+    });
+  }
+
+  function renderDetResult(state) {
+    document.body.classList.remove("in-game");
+    const total = state.questions.length;
+    const maxScore = total * 100;
+    const exact = state.results.filter(r => r.gap === 0).length;
+    const near = state.results.filter(r => r.gap === 1).length;
+    const pct = state.score / maxScore;
+    const isWin = pct >= 0.75;
+    const line = isWin ? pick(DET_WIN_LINES) : pick(DET_TRASH_LINES);
+
+    app.innerHTML = `
+      <section class="result">
+        <div class="result-top">
+          <div class="result-meta">Shrnutí · Detektiv</div>
+          <div class="result-meta">${state.score} / ${maxScore} XP</div>
+        </div>
+        <div>
+          <p class="result-line-big">${line}</p>
+        </div>
+        <div>
+          <div class="result-stats four">
+            <div class="result-stat">
+              <div class="result-stat-label">XP získáno</div>
+              <div class="result-stat-num">${state.score}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">Přesná datace</div>
+              <div class="result-stat-num">${exact}/${total}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">O období vedle</div>
+              <div class="result-stat-num">${near}</div>
+            </div>
+            <div class="result-stat">
+              <div class="result-stat-label">Nejdelší streak</div>
+              <div class="result-stat-num">${state.maxStreak}</div>
+            </div>
+          </div>
+          <div class="result-ctas">
+            <button class="btn-result" id="play-again">
+              Hrát znovu
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8 L 13 8 M 9 4 L 13 8 L 9 12"/></svg>
+            </button>
+            <button class="btn-result outline" id="other-char">Vybrat jiný charakter</button>
+          </div>
+        </div>
+      </section>`;
+    document.getElementById("play-again").addEventListener("click", startDetektiv);
     document.getElementById("other-char").addEventListener("click", screenCharSelect);
   }
 
