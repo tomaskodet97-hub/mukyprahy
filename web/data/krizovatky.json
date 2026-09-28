@@ -2,14 +2,14 @@
   {
     "tsk": "2045",
     "ulice": "Seifertova, Husitská",
-    "typ": "deltová",
+    "typ": "kosodélná",
     "doba_vystavby": "70. léta",
     "intenzita_2020": "pracovní den 81 100 (2 000 pomalá)",
     "rok_ortofoto_novy": 2020,
     "rok_ortofoto_stary": 1966,
     "lat": 50.0865147,
     "lon": 14.43732,
-    "typ_slug": "deltova"
+    "typ_slug": "kosodelna"
   },
   {
     "tsk": "4008",
